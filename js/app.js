@@ -56,6 +56,9 @@
       players = savedPlayers;
     }
 
+    // Load custom word packs
+    Words.loadCustomPacks(Storage.loadCustomPacks());
+
     // Wire up events
     wireHome();
     wireSetup();
@@ -63,6 +66,7 @@
     wireReveal();
     wirePlaying();
     wireResults();
+    wireCustomPacks();
 
     // Register service worker
     if ('serviceWorker' in navigator) {
@@ -288,6 +292,7 @@
     game = Game.createGame(players, settings);
     Game.assignRoles(game);
     Game.selectWord(game);
+    Game.pickFirstPlayer(game);
     revealIndex = 0;
     startReveal();
   }
@@ -408,6 +413,10 @@
   function startPlaying() {
     renderPlayingPlayerList();
 
+    // Show who goes first
+    var firstName = game.players[game.firstPlayer];
+    $('first-player').innerHTML = '<strong>' + escapeHtml(firstName) + '</strong> goes first';
+
     if (settings.timerEnabled) {
       $('timer-display').classList.remove('hidden');
       startTimer(settings.timerDuration);
@@ -417,6 +426,12 @@
 
     showScreen('playing');
     document.body.classList.add('no-select');
+  }
+
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
   }
 
   function renderPlayingPlayerList() {
@@ -521,6 +536,7 @@
       game = Game.createGame(players, settings);
       Game.assignRoles(game);
       Game.selectWord(game);
+      Game.pickFirstPlayer(game);
       revealIndex = 0;
       document.body.classList.remove('no-select');
       startReveal();
@@ -545,6 +561,156 @@
     $('result-word').textContent = results.word;
     document.body.classList.remove('no-select');
     showScreen('results');
+  }
+
+  // --- Custom Packs ---
+  let customPacks = []; // array of { name, words: [{ word, hint }] }
+  let editingPackIndex = -1; // -1 = new pack
+  let editorWords = []; // temp word list while editing
+
+  function wireCustomPacks() {
+    customPacks = Storage.loadCustomPacks();
+
+    $('btn-custom-packs').addEventListener('click', () => {
+      renderCustomPackList();
+      $('custom-list-overlay').classList.remove('hidden');
+    });
+
+    $('btn-custom-list-close').addEventListener('click', () => {
+      $('custom-list-overlay').classList.add('hidden');
+      renderCategories(); // refresh category grid with any new packs
+    });
+
+    $('btn-new-pack').addEventListener('click', () => {
+      openPackEditor(-1);
+    });
+
+    // Editor events
+    $('btn-add-word').addEventListener('click', addEditorWord);
+    $('input-hint').addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); addEditorWord(); }
+    });
+    $('input-word').addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); $('input-hint').focus(); }
+    });
+
+    $('input-pack-name').addEventListener('input', () => {
+      $('btn-custom-save').disabled = editorWords.length < 3 || !$('input-pack-name').value.trim();
+    });
+
+    $('btn-custom-cancel').addEventListener('click', () => {
+      $('custom-overlay').classList.add('hidden');
+    });
+
+    $('btn-custom-save').addEventListener('click', () => {
+      var name = $('input-pack-name').value.trim();
+      if (!name || editorWords.length < 3) return;
+
+      var pack = { name: name, words: editorWords.map(w => ({ word: w.word, hint: w.hint })) };
+      if (editingPackIndex >= 0) {
+        customPacks[editingPackIndex] = pack;
+      } else {
+        customPacks.push(pack);
+      }
+      saveAndReloadPacks();
+      $('custom-overlay').classList.add('hidden');
+      renderCustomPackList();
+    });
+
+    $('btn-custom-delete').addEventListener('click', () => {
+      if (editingPackIndex >= 0) {
+        customPacks.splice(editingPackIndex, 1);
+        // Remove from selected categories if present
+        var oldId = 'custom_' + editingPackIndex;
+        settings.categories = settings.categories.filter(c => !c.startsWith('custom_'));
+        saveAndReloadPacks();
+        $('custom-overlay').classList.add('hidden');
+        renderCustomPackList();
+      }
+    });
+  }
+
+  function saveAndReloadPacks() {
+    Storage.saveCustomPacks(customPacks);
+    Words.loadCustomPacks(customPacks);
+  }
+
+  function renderCustomPackList() {
+    var list = $('custom-pack-list');
+    list.innerHTML = '';
+    if (customPacks.length === 0) {
+      var li = document.createElement('li');
+      li.className = 'player-item';
+      li.innerHTML = '<span class="player-name" style="color:var(--text-dim)">No custom packs yet</span>';
+      list.appendChild(li);
+      return;
+    }
+    customPacks.forEach(function(pack, i) {
+      var li = document.createElement('li');
+      li.className = 'player-item';
+      var span = document.createElement('span');
+      span.className = 'player-name';
+      span.textContent = pack.name + ' (' + pack.words.length + ')';
+      li.appendChild(span);
+      li.addEventListener('click', function() { openPackEditor(i); });
+      list.appendChild(li);
+    });
+  }
+
+  function openPackEditor(index) {
+    editingPackIndex = index;
+    if (index >= 0) {
+      var pack = customPacks[index];
+      $('input-pack-name').value = pack.name;
+      editorWords = pack.words.map(function(w) { return { word: w.word, hint: w.hint }; });
+      $('custom-editor-title').textContent = 'Edit Pack';
+      $('btn-custom-delete').classList.remove('hidden');
+    } else {
+      $('input-pack-name').value = '';
+      editorWords = [];
+      $('custom-editor-title').textContent = 'New Pack';
+      $('btn-custom-delete').classList.add('hidden');
+    }
+    renderEditorWords();
+    $('custom-list-overlay').classList.add('hidden');
+    $('custom-overlay').classList.remove('hidden');
+    $('input-pack-name').focus();
+  }
+
+  function addEditorWord() {
+    var word = $('input-word').value.trim();
+    var hint = $('input-hint').value.trim();
+    if (!word) return;
+    if (!hint) hint = '???';
+    editorWords.push({ word: word, hint: hint });
+    $('input-word').value = '';
+    $('input-hint').value = '';
+    renderEditorWords();
+    $('input-word').focus();
+  }
+
+  function renderEditorWords() {
+    var list = $('custom-word-list');
+    list.innerHTML = '';
+    editorWords.forEach(function(w, i) {
+      var li = document.createElement('li');
+      li.className = 'player-item';
+      var span = document.createElement('span');
+      span.className = 'player-name';
+      span.textContent = w.word + ' \u2192 ' + w.hint;
+      var removeBtn = document.createElement('button');
+      removeBtn.className = 'player-remove';
+      removeBtn.textContent = '\u00d7';
+      removeBtn.addEventListener('click', function() {
+        editorWords.splice(i, 1);
+        renderEditorWords();
+      });
+      li.appendChild(span);
+      li.appendChild(removeBtn);
+      list.appendChild(li);
+    });
+    $('custom-word-count').textContent = editorWords.length + ' word' + (editorWords.length === 1 ? '' : 's') + (editorWords.length < 3 ? ' (need at least 3)' : '');
+    $('btn-custom-save').disabled = editorWords.length < 3 || !$('input-pack-name').value.trim();
   }
 
   // --- Boot ---

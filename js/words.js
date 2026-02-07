@@ -706,25 +706,52 @@ var Words = (function () {
     }
   };
 
+  // Custom packs loaded from storage, keyed by "custom_<index>"
+  let customPacks = {};
+
+  function loadCustomPacks(packs) {
+    customPacks = {};
+    if (!packs || !packs.length) return;
+    packs.forEach((pack, i) => {
+      const id = 'custom_' + i;
+      customPacks[id] = {
+        name: pack.name,
+        words: pack.words // each: { word, hint }
+      };
+    });
+  }
+
   function getCategories() {
-    return Object.keys(data).map(id => ({
+    const built = Object.keys(data).map(id => ({
       id,
       name: data[id].name,
-      count: data[id].words.length
+      count: data[id].words.length,
+      custom: false
     }));
+    const custom = Object.keys(customPacks).map(id => ({
+      id,
+      name: customPacks[id].name,
+      count: customPacks[id].words.length,
+      custom: true
+    }));
+    return built.concat(custom);
+  }
+
+  function getAllData() {
+    return { ...data, ...customPacks };
   }
 
   function getRandomWord(categoryIds, usedWords) {
-    // Collect eligible words
+    const all = getAllData();
     const pool = [];
     const ids = categoryIds && categoryIds.length > 0
       ? categoryIds
-      : Object.keys(data);
+      : Object.keys(all);
 
     ids.forEach(id => {
-      if (!data[id]) return;
-      data[id].words.forEach(w => {
-        pool.push({ ...w, category: data[id].name });
+      if (!all[id]) return;
+      all[id].words.forEach(w => {
+        pool.push({ ...w, category: all[id].name });
       });
     });
 
@@ -743,12 +770,13 @@ var Words = (function () {
   }
 
   function getTotalWordCount() {
+    const all = getAllData();
     let count = 0;
-    Object.values(data).forEach(cat => { count += cat.words.length; });
+    Object.values(all).forEach(cat => { count += cat.words.length; });
     return count;
   }
 
-  return { getCategories, getRandomWord, getTotalWordCount };
+  return { getCategories, getRandomWord, getTotalWordCount, loadCustomPacks };
 })();
 
 // Node.js compat for testing

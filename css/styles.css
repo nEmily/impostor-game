@@ -518,6 +518,22 @@ input[type="text"]::placeholder {
   font-variant-numeric: tabular-nums;
 }
 
+/* === First Player Callout === */
+.first-player {
+  font-size: 1.1rem;
+  text-align: center;
+  color: var(--text);
+  background: var(--bg-card);
+  padding: 12px 20px;
+  border-radius: var(--radius);
+  border-left: 4px solid var(--accent);
+  width: 100%;
+}
+
+.first-player strong {
+  color: var(--accent);
+}
+
 /* === Playing List === */
 .playing-list .player-item {
   cursor: default;
@@ -637,6 +653,26 @@ input[type="text"]::placeholder {
   .player-list {
     max-height: 180px;
   }
+}
+
+/* === Compact button === */
+.btn-compact {
+  padding: 10px 16px;
+  font-size: 0.875rem;
+}
+
+/* === Custom Editor === */
+.custom-editor {
+  max-height: 80dvh;
+  overflow-y: auto;
+}
+
+.custom-editor .input-row {
+  gap: 6px;
+}
+
+.custom-editor #input-hint {
+  max-width: 120px;
 }
 
 /* === Touch callout disable during gameplay === */

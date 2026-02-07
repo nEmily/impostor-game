@@ -118,6 +118,24 @@ var Game = (function () {
     };
   }
 
+  function pickFirstPlayer(game) {
+    // Weighted random: civilians get 3x weight, impostors get 1x
+    const weighted = game.players.map((_, i) => ({
+      index: i,
+      weight: game.roles[i] === 'impostor' ? 1 : 3
+    }));
+    const total = weighted.reduce((s, w) => s + w.weight, 0);
+    let rand = Math.random() * total;
+    for (const w of weighted) {
+      rand -= w.weight;
+      if (rand <= 0) {
+        game.firstPlayer = w.index;
+        return;
+      }
+    }
+    game.firstPlayer = 0;
+  }
+
   function getResults(game) {
     return {
       impostors: game.impostors.map(i => game.players[i]),
@@ -129,6 +147,7 @@ var Game = (function () {
     createGame,
     assignRoles,
     selectWord,
+    pickFirstPlayer,
     getPlayerReveal,
     getResults,
     toggleImmunity

@@ -5,7 +5,8 @@ var Storage = (function () {
 
   const KEYS = {
     settings: 'impostor_settings',
-    players: 'impostor_players'
+    players: 'impostor_players',
+    customPacks: 'impostor_custom_packs'
   };
 
   function saveSettings(settings) {
@@ -38,7 +39,22 @@ var Storage = (function () {
     }
   }
 
-  return { saveSettings, loadSettings, savePlayers, loadPlayers };
+  function saveCustomPacks(packs) {
+    try {
+      localStorage.setItem(KEYS.customPacks, JSON.stringify(packs));
+    } catch (e) { /* quota exceeded */ }
+  }
+
+  function loadCustomPacks() {
+    try {
+      const raw = localStorage.getItem(KEYS.customPacks);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  return { saveSettings, loadSettings, savePlayers, loadPlayers, saveCustomPacks, loadCustomPacks };
 })();
 
 // Node.js compat for testing

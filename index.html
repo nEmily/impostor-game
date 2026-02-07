@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-title" content="Impostor">
   <meta name="theme-color" content="#1a1a2e">
   <meta name="description" content="Pass-and-play social deduction party game">
-  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/styles.css">
   <title>Impostor</title>
@@ -49,6 +49,7 @@
       <div class="setting-group">
         <h3>Categories</h3>
         <div id="category-list" class="category-grid"></div>
+        <button id="btn-custom-packs" class="btn btn-secondary btn-compact">+ Custom Pack</button>
       </div>
 
       <div class="setting-group">
@@ -116,6 +117,7 @@
   <section id="screen-playing" class="screen hidden" aria-label="Playing">
     <div class="screen-content">
       <h2>Everyone has their word!</h2>
+      <p id="first-player" class="first-player"></p>
       <div id="timer-display" class="timer-display hidden">
         <div id="timer-bar" class="timer-bar"></div>
         <span id="timer-text" class="timer-text"></span>
@@ -169,6 +171,40 @@
       </div>
     </div>
   </section>
+
+  <!-- CUSTOM PACK EDITOR -->
+  <div id="custom-overlay" class="overlay hidden">
+    <div class="overlay-content custom-editor">
+      <h2 id="custom-editor-title">Custom Pack</h2>
+      <div class="input-row">
+        <input type="text" id="input-pack-name" placeholder="Pack name" maxlength="30" autocomplete="off">
+      </div>
+      <div class="input-row">
+        <input type="text" id="input-word" placeholder="Word" maxlength="40" autocomplete="off">
+        <input type="text" id="input-hint" placeholder="Hint" maxlength="30" autocomplete="off">
+        <button id="btn-add-word" class="btn btn-small">+</button>
+      </div>
+      <ul id="custom-word-list" class="player-list"></ul>
+      <p id="custom-word-count" class="hint"></p>
+      <div class="btn-row">
+        <button id="btn-custom-cancel" class="btn btn-secondary">Cancel</button>
+        <button id="btn-custom-save" class="btn btn-primary" disabled>Save</button>
+      </div>
+      <button id="btn-custom-delete" class="btn btn-danger btn-compact hidden">Delete Pack</button>
+    </div>
+  </div>
+
+  <!-- CUSTOM PACK LIST -->
+  <div id="custom-list-overlay" class="overlay hidden">
+    <div class="overlay-content">
+      <h2>Custom Packs</h2>
+      <ul id="custom-pack-list" class="player-list"></ul>
+      <div class="btn-stack">
+        <button id="btn-new-pack" class="btn btn-primary">+ New Pack</button>
+        <button id="btn-custom-list-close" class="btn btn-secondary">Done</button>
+      </div>
+    </div>
+  </div>
 
   <script src="js/words.js"></script>
   <script src="js/storage.js"></script>
