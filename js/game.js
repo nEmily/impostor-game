@@ -32,7 +32,7 @@ var Game = (function () {
   }
 
   function assignRoles(game) {
-    const count = game.settings.impostorCount || 1;
+    const count = Math.min(game.settings.impostorCount || 1, game.players.length - 2);
     const playerCount = game.players.length;
 
     // Build candidate pool: exclude immune players and recent impostors

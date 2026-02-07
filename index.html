@@ -127,13 +127,15 @@
       <div class="btn-stack">
         <button id="btn-check-word" class="btn btn-secondary">Check My Word</button>
         <button id="btn-reveal-impostor" class="btn btn-danger">Reveal Impostor</button>
+        <button id="btn-reveal-confirm" class="btn btn-danger hidden">Are you sure? Tap to reveal</button>
       </div>
     </div>
 
     <!-- Check word overlay -->
     <div id="check-overlay" class="overlay hidden">
       <div class="overlay-content">
-        <p class="hint">Who are you?</p>
+        <p class="check-warning">Only check your own word!</p>
+        <p class="hint">Select your name</p>
         <ul id="check-player-list" class="player-list check-list"></ul>
         <button id="btn-check-cancel" class="btn btn-secondary">Cancel</button>
       </div>
@@ -160,7 +162,7 @@
   <!-- RESULTS -->
   <section id="screen-results" class="screen hidden" aria-label="Results">
     <div class="screen-content">
-      <h2>The impostor was...</h2>
+      <h2 id="result-heading">The impostor was...</h2>
       <p id="result-impostor" class="result-name"></p>
       <p class="result-label">The word was</p>
       <p id="result-word" class="result-word"></p>

@@ -109,8 +109,12 @@
     function addPlayer() {
       const name = input.value.trim();
       if (!name) return;
-      if (players.length >= 24) return;
+      if (players.length >= 24) {
+        showSetupHint('Maximum 24 players');
+        return;
+      }
       if (players.some(p => p.toLowerCase() === name.toLowerCase())) {
+        showSetupHint('"' + name + '" is already added');
         input.value = '';
         return;
       }
@@ -118,6 +122,13 @@
       input.value = '';
       renderPlayerList();
       input.focus();
+    }
+
+    function showSetupHint(msg) {
+      var count = $('player-count');
+      count.textContent = msg;
+      count.classList.add('hint-flash');
+      setTimeout(function() { count.classList.remove('hint-flash'); }, 1500);
     }
 
     addBtn.addEventListener('click', addPlayer);
@@ -235,6 +246,11 @@
         // Auto-select all if none chosen
         settings.categories = Words.getCategories().map(c => c.id);
         renderCategories();
+      }
+      // Clamp impostor count to valid range
+      var maxImpostors = Math.max(1, players.length - 2);
+      if (settings.impostorCount > maxImpostors) {
+        settings.impostorCount = maxImpostors;
       }
       Storage.saveSettings(settings);
       startGame();
@@ -404,7 +420,22 @@
       $('recheck-content').classList.add('hidden');
     });
 
+    var revealConfirmTimeout = null;
     $('btn-reveal-impostor').addEventListener('click', () => {
+      $('btn-reveal-impostor').classList.add('hidden');
+      $('btn-reveal-confirm').classList.remove('hidden');
+      // Auto-reset after 3 seconds if not confirmed
+      clearTimeout(revealConfirmTimeout);
+      revealConfirmTimeout = setTimeout(() => {
+        $('btn-reveal-confirm').classList.add('hidden');
+        $('btn-reveal-impostor').classList.remove('hidden');
+      }, 3000);
+    });
+
+    $('btn-reveal-confirm').addEventListener('click', () => {
+      clearTimeout(revealConfirmTimeout);
+      $('btn-reveal-confirm').classList.add('hidden');
+      $('btn-reveal-impostor').classList.remove('hidden');
       stopTimer();
       showResults();
     });
@@ -412,6 +443,10 @@
 
   function startPlaying() {
     renderPlayingPlayerList();
+
+    // Reset reveal confirm state
+    $('btn-reveal-confirm').classList.add('hidden');
+    $('btn-reveal-impostor').classList.remove('hidden');
 
     // Show who goes first
     var firstName = game.players[game.firstPlayer];
@@ -492,6 +527,8 @@
 
   // --- Timer ---
   function startTimer(seconds) {
+    stopTimer();
+    $('timer-display').classList.remove('timer-expired');
     timerRemaining = seconds;
     const total = seconds;
     updateTimerDisplay(total);
@@ -501,6 +538,7 @@
       updateTimerDisplay(total);
       if (timerRemaining <= 0) {
         stopTimer();
+        onTimerExpired();
       }
     }, 1000);
   }
@@ -529,10 +567,20 @@
     }
   }
 
+  function onTimerExpired() {
+    $('timer-text').textContent = "TIME'S UP!";
+    $('timer-display').classList.add('timer-expired');
+    // Vibrate if supported
+    if (navigator.vibrate) {
+      navigator.vibrate([200, 100, 200]);
+    }
+  }
+
   // --- Results ---
   function wireResults() {
     $('btn-play-again').addEventListener('click', () => {
       // New round, same players and settings
+      stopTimer();
       game = Game.createGame(players, settings);
       Game.assignRoles(game);
       Game.selectWord(game);
@@ -557,6 +605,8 @@
 
   function showResults() {
     const results = Game.getResults(game);
+    $('result-heading').textContent = results.impostors.length > 1
+      ? 'The impostors were...' : 'The impostor was...';
     $('result-impostor').textContent = results.impostors.join(' & ');
     $('result-word').textContent = results.word;
     document.body.classList.remove('no-select');
@@ -619,10 +669,25 @@
 
     $('btn-custom-delete').addEventListener('click', () => {
       if (editingPackIndex >= 0) {
+        // Remove the deleted pack's category from selections
+        // Since indices shift after splice, remove all custom_ and re-map
+        var oldCustomIds = customPacks.map((_, i) => 'custom_' + i);
+        var selectedCustomIndices = [];
+        settings.categories.forEach(c => {
+          if (c.startsWith('custom_')) {
+            var idx = parseInt(c.replace('custom_', ''));
+            if (idx !== editingPackIndex) {
+              // Adjust index: if it was after the deleted one, shift down
+              selectedCustomIndices.push(idx > editingPackIndex ? idx - 1 : idx);
+            }
+          }
+        });
         customPacks.splice(editingPackIndex, 1);
-        // Remove from selected categories if present
-        var oldId = 'custom_' + editingPackIndex;
+        // Rebuild categories: keep non-custom, add remapped custom
         settings.categories = settings.categories.filter(c => !c.startsWith('custom_'));
+        selectedCustomIndices.forEach(i => {
+          settings.categories.push('custom_' + i);
+        });
         saveAndReloadPacks();
         $('custom-overlay').classList.add('hidden');
         renderCustomPackList();
@@ -681,6 +746,11 @@
     var word = $('input-word').value.trim();
     var hint = $('input-hint').value.trim();
     if (!word) return;
+    // Prevent duplicate words in the pack
+    if (editorWords.some(function(w) { return w.word.toLowerCase() === word.toLowerCase(); })) {
+      $('input-word').value = '';
+      return;
+    }
     if (!hint) hint = '???';
     editorWords.push({ word: word, hint: hint });
     $('input-word').value = '';
