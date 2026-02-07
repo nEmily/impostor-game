@@ -312,6 +312,11 @@
         startPlaying();
       }
     });
+
+    $('btn-show-again').addEventListener('click', () => {
+      $('reveal-confirm').classList.add('hidden');
+      $('reveal-hold').classList.remove('hidden');
+    });
   }
 
   function startReveal() {
