@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Impostor">
+  <meta name="theme-color" content="#1a1a2e">
+  <meta name="description" content="Pass-and-play social deduction party game">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/styles.css">
+  <title>Impostor</title>
+</head>
+<body>
+
+  <!-- HOME -->
+  <section id="screen-home" class="screen" aria-label="Home">
+    <div class="screen-content">
+      <h1 class="title">IMPOSTOR</h1>
+      <p class="subtitle">A social deduction party game</p>
+      <button id="btn-new-game" class="btn btn-primary">New Game</button>
+    </div>
+  </section>
+
+  <!-- SETUP -->
+  <section id="screen-setup" class="screen hidden" aria-label="Player Setup">
+    <div class="screen-content">
+      <h2>Players</h2>
+      <div class="input-row">
+        <input type="text" id="input-player-name" placeholder="Enter name" maxlength="20" autocomplete="off" enterkeyhint="done">
+        <button id="btn-add-player" class="btn btn-small">Add</button>
+      </div>
+      <ul id="player-list" class="player-list"></ul>
+      <p id="player-count" class="hint">Add at least 3 players</p>
+      <div class="btn-row">
+        <button id="btn-setup-back" class="btn btn-secondary">Back</button>
+        <button id="btn-setup-next" class="btn btn-primary" disabled>Next</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="screen-settings" class="screen hidden" aria-label="Settings">
+    <div class="screen-content">
+      <h2>Settings</h2>
+
+      <div class="setting-group">
+        <h3>Categories</h3>
+        <div id="category-list" class="category-grid"></div>
+      </div>
+
+      <div class="setting-group">
+        <h3>Impostors</h3>
+        <div class="toggle-row">
+          <button class="btn btn-toggle active" data-impostors="1">1</button>
+          <button class="btn btn-toggle" data-impostors="2">2</button>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <h3>Timer</h3>
+        <div class="toggle-row">
+          <label class="switch">
+            <input type="checkbox" id="toggle-timer">
+            <span class="slider"></span>
+          </label>
+          <span id="timer-label">Off</span>
+        </div>
+        <div id="timer-options" class="timer-options hidden">
+          <div class="toggle-row">
+            <button class="btn btn-toggle" data-time="60">1 min</button>
+            <button class="btn btn-toggle active" data-time="120">2 min</button>
+            <button class="btn btn-toggle" data-time="180">3 min</button>
+            <button class="btn btn-toggle" data-time="300">5 min</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button id="btn-settings-back" class="btn btn-secondary">Back</button>
+        <button id="btn-start-game" class="btn btn-primary">Start Game</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROLE REVEAL -->
+  <section id="screen-reveal" class="screen hidden" aria-label="Role Reveal">
+    <div class="screen-content">
+      <div id="reveal-pass" class="reveal-state">
+        <p class="pass-label">Pass the phone to</p>
+        <p id="reveal-player-name" class="player-name-large"></p>
+        <button id="btn-ready" class="btn btn-primary">Ready</button>
+      </div>
+      <div id="reveal-hold" class="reveal-state hidden">
+        <p class="hint">Hold to see your role</p>
+        <button id="btn-hold-reveal" class="btn btn-hold">
+          <span class="hold-text">Hold</span>
+        </button>
+        <div id="reveal-content" class="reveal-content hidden">
+          <p id="reveal-role" class="role-text"></p>
+          <p id="reveal-word" class="word-text"></p>
+          <p id="reveal-hint" class="hint-text"></p>
+        </div>
+      </div>
+      <div id="reveal-confirm" class="reveal-state hidden">
+        <p class="confirm-text">Got it? Memorize your word!</p>
+        <button id="btn-got-it" class="btn btn-primary">Got it!</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLAYING -->
+  <section id="screen-playing" class="screen hidden" aria-label="Playing">
+    <div class="screen-content">
+      <h2>Everyone has their word!</h2>
+      <div id="timer-display" class="timer-display hidden">
+        <div id="timer-bar" class="timer-bar"></div>
+        <span id="timer-text" class="timer-text"></span>
+      </div>
+      <p class="hint">Give one-word clues, discuss, and vote!</p>
+      <ul id="playing-player-list" class="player-list playing-list"></ul>
+      <div class="btn-stack">
+        <button id="btn-check-word" class="btn btn-secondary">Check My Word</button>
+        <button id="btn-reveal-impostor" class="btn btn-danger">Reveal Impostor</button>
+      </div>
+    </div>
+
+    <!-- Check word overlay -->
+    <div id="check-overlay" class="overlay hidden">
+      <div class="overlay-content">
+        <p class="hint">Who are you?</p>
+        <ul id="check-player-list" class="player-list check-list"></ul>
+        <button id="btn-check-cancel" class="btn btn-secondary">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Hold-to-reveal overlay for re-check -->
+    <div id="recheck-overlay" class="overlay hidden">
+      <div class="overlay-content">
+        <p id="recheck-name" class="player-name-large"></p>
+        <p class="hint">Hold to see your role</p>
+        <button id="btn-hold-recheck" class="btn btn-hold">
+          <span class="hold-text">Hold</span>
+        </button>
+        <div id="recheck-content" class="reveal-content hidden">
+          <p id="recheck-role" class="role-text"></p>
+          <p id="recheck-word" class="word-text"></p>
+          <p id="recheck-hint" class="hint-text"></p>
+        </div>
+        <button id="btn-recheck-done" class="btn btn-primary">Done</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="screen-results" class="screen hidden" aria-label="Results">
+    <div class="screen-content">
+      <h2>The impostor was...</h2>
+      <p id="result-impostor" class="result-name"></p>
+      <p class="result-label">The word was</p>
+      <p id="result-word" class="result-word"></p>
+      <div class="btn-stack">
+        <button id="btn-play-again" class="btn btn-primary">Play Again</button>
+        <button id="btn-change-settings" class="btn btn-secondary">Change Settings</button>
+        <button id="btn-new-game-home" class="btn btn-secondary">New Game</button>
+      </div>
+    </div>
+  </section>
+
+  <script src="js/words.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
