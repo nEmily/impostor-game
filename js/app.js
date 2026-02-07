@@ -6,6 +6,8 @@
   // --- Screen Router ---
   const screens = {};
   let currentScreen = null;
+  let currentScreenId = null;
+  let handlingPopState = false;
 
   function showScreen(id) {
     if (currentScreen) {
@@ -15,6 +17,11 @@
     if (screen) {
       screen.classList.remove('hidden');
       currentScreen = screen;
+      currentScreenId = id;
+      // Push history state so back button navigates between screens
+      if (!handlingPopState) {
+        history.pushState({ screen: id }, '', '');
+      }
     }
   }
 
@@ -83,7 +90,24 @@
       }
     });
 
+    // Handle back button
+    window.addEventListener('popstate', function(e) {
+      if (e.state && e.state.screen) {
+        handlingPopState = true;
+        showScreen(e.state.screen);
+        handlingPopState = false;
+      } else {
+        // No state = initial entry, show home
+        handlingPopState = true;
+        showScreen('home');
+        handlingPopState = false;
+        // Push home state so next back exits the app
+        history.replaceState({ screen: 'home' }, '', '');
+      }
+    });
+
     // Show home
+    history.replaceState({ screen: 'home' }, '', '');
     showScreen('home');
   }
 
