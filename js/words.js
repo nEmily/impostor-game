@@ -721,8 +721,20 @@ var Words = (function () {
     });
   }
 
+  // Preferred display order (most fun/interesting first)
+  const categoryOrder = [
+    'brainrot', 'internet', 'movies', 'music', 'activities',
+    'sports', 'food', 'animals', 'fashion', 'places',
+    'countries', 'technology', 'jobs', 'objects', 'abstract'
+  ];
+
   function getCategories() {
-    const built = Object.keys(data).map(id => ({
+    const ordered = categoryOrder.filter(id => data[id]);
+    // Append any categories not in the preferred order
+    Object.keys(data).forEach(id => {
+      if (!ordered.includes(id)) ordered.push(id);
+    });
+    const built = ordered.map(id => ({
       id,
       name: data[id].name,
       count: data[id].words.length,

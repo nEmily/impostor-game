@@ -48,33 +48,35 @@
 
       <div class="setting-group">
         <h3>Categories</h3>
-        <div id="category-list" class="category-grid"></div>
+        <div class="category-grid-wrapper">
+          <div id="category-list" class="category-grid"></div>
+        </div>
         <button id="btn-custom-packs" class="btn btn-secondary btn-compact">+ Custom Pack</button>
       </div>
 
-      <div class="setting-group">
-        <h3>Impostors</h3>
-        <div class="toggle-row">
-          <button class="btn btn-toggle active" data-impostors="1">1</button>
-          <button class="btn btn-toggle" data-impostors="2">2</button>
+      <div class="setting-group setting-group-compact">
+        <div class="setting-labeled-row">
+          <h3>Impostors</h3>
+          <div class="toggle-row toggle-row-fit">
+            <button class="btn btn-toggle active" data-impostors="1">1</button>
+            <button class="btn btn-toggle" data-impostors="2">2</button>
+          </div>
         </div>
-      </div>
-
-      <div class="setting-group">
-        <h3>Timer</h3>
-        <div class="toggle-row">
-          <label class="switch">
-            <input type="checkbox" id="toggle-timer">
-            <span class="slider"></span>
-          </label>
-          <span id="timer-label">Off</span>
-        </div>
-        <div id="timer-options" class="timer-options hidden">
-          <div class="toggle-row">
-            <button class="btn btn-toggle" data-time="60">1 min</button>
-            <button class="btn btn-toggle active" data-time="120">2 min</button>
-            <button class="btn btn-toggle" data-time="180">3 min</button>
-            <button class="btn btn-toggle" data-time="300">5 min</button>
+        <div class="setting-labeled-row">
+          <h3>Timer</h3>
+          <div class="toggle-row toggle-row-fit">
+            <label class="switch">
+              <input type="checkbox" id="toggle-timer">
+              <span class="slider"></span>
+            </label>
+            <select id="timer-duration" class="timer-select" disabled>
+              <option value="60">1 min</option>
+              <option value="120" selected>2 min</option>
+              <option value="180">3 min</option>
+              <option value="300">5 min</option>
+              <option value="420">7 min</option>
+              <option value="600">10 min</option>
+            </select>
           </div>
         </div>
       </div>
@@ -94,21 +96,22 @@
         <p id="reveal-player-name" class="player-name-large"></p>
         <button id="btn-ready" class="btn btn-primary">Ready</button>
       </div>
-      <div id="reveal-hold" class="reveal-state hidden">
-        <p class="hint">Hold to see your role</p>
-        <button id="btn-hold-reveal" class="btn btn-hold">
-          <span class="hold-text">Hold</span>
-        </button>
-        <div id="reveal-content" class="reveal-content hidden">
-          <p id="reveal-role" class="role-text"></p>
-          <p id="reveal-word" class="word-text"></p>
-          <p id="reveal-hint" class="hint-text"></p>
+      <div id="reveal-hold" class="reveal-state reveal-hold-layout hidden">
+        <p id="reveal-hold-name" class="player-name-large"></p>
+        <div class="reveal-hold-stage">
+          <div class="reveal-info-area">
+            <div id="reveal-content" class="reveal-float hidden">
+              <p id="reveal-role" class="role-text"></p>
+              <p id="reveal-word" class="word-text"></p>
+              <p id="reveal-hint" class="hint-text"></p>
+            </div>
+            <p id="reveal-hold-hint" class="hint">Hold to see your role</p>
+          </div>
+          <button id="btn-hold-reveal" class="btn btn-hold">
+            <span class="hold-text">Hold</span>
+          </button>
         </div>
-      </div>
-      <div id="reveal-confirm" class="reveal-state hidden">
-        <p class="confirm-text">Got it? Memorize your word!</p>
-        <button id="btn-got-it" class="btn btn-primary">Got it!</button>
-        <button id="btn-show-again" class="btn btn-secondary">Show me again</button>
+        <button id="btn-got-it" class="btn btn-primary btn-got-it hidden" disabled>Got it!</button>
       </div>
     </div>
   </section>
@@ -116,18 +119,23 @@
   <!-- PLAYING -->
   <section id="screen-playing" class="screen hidden" aria-label="Playing">
     <div class="screen-content">
-      <h2>Everyone has their word!</h2>
+      <h2 class="playing-heading">Find the Impostor</h2>
       <p id="first-player" class="first-player"></p>
       <div id="timer-display" class="timer-display hidden">
         <div id="timer-bar" class="timer-bar"></div>
         <span id="timer-text" class="timer-text"></span>
       </div>
-      <p class="hint">Give one-word clues, discuss, and vote!</p>
-      <ul id="playing-player-list" class="player-list playing-list"></ul>
-      <div class="btn-stack">
-        <button id="btn-check-word" class="btn btn-secondary">Check My Word</button>
-        <button id="btn-reveal-impostor" class="btn btn-danger">Reveal Impostor</button>
-        <button id="btn-reveal-confirm" class="btn btn-danger hidden">Are you sure? Tap to reveal</button>
+      <div class="playing-rules">
+        <p>Take turns giving one-word clues.</p>
+        <p>Discuss, then vote on who the impostor is!</p>
+      </div>
+      <div class="btn-stack playing-actions">
+        <button id="btn-check-word" class="btn btn-secondary">Check My Word Again</button>
+        <button id="btn-reveal-impostor" class="btn btn-reveal-impostor">
+          <span class="reveal-impostor-fill"></span>
+          <span class="reveal-impostor-text">Hold to Reveal Impostor</span>
+          <span class="reveal-impostor-countdown hidden"></span>
+        </button>
       </div>
     </div>
 
@@ -145,14 +153,18 @@
     <div id="recheck-overlay" class="overlay hidden">
       <div class="overlay-content">
         <p id="recheck-name" class="player-name-large"></p>
-        <p class="hint">Hold to see your role</p>
-        <button id="btn-hold-recheck" class="btn btn-hold">
-          <span class="hold-text">Hold</span>
-        </button>
-        <div id="recheck-content" class="reveal-content hidden">
-          <p id="recheck-role" class="role-text"></p>
-          <p id="recheck-word" class="word-text"></p>
-          <p id="recheck-hint" class="hint-text"></p>
+        <div class="reveal-hold-stage">
+          <div class="reveal-info-area">
+            <div id="recheck-content" class="reveal-float hidden">
+              <p id="recheck-role" class="role-text"></p>
+              <p id="recheck-word" class="word-text"></p>
+              <p id="recheck-hint" class="hint-text"></p>
+            </div>
+            <p id="recheck-hold-hint" class="hint">Hold to see your role</p>
+          </div>
+          <button id="btn-hold-recheck" class="btn btn-hold">
+            <span class="hold-text">Hold</span>
+          </button>
         </div>
         <button id="btn-recheck-done" class="btn btn-primary">Done</button>
       </div>
@@ -166,7 +178,7 @@
       <p id="result-impostor" class="result-name"></p>
       <p class="result-label">The word was</p>
       <p id="result-word" class="result-word"></p>
-      <div class="btn-stack">
+      <div class="btn-stack results-actions">
         <button id="btn-play-again" class="btn btn-primary">Play Again</button>
         <button id="btn-change-settings" class="btn btn-secondary">Change Settings</button>
         <button id="btn-new-game-home" class="btn btn-secondary">New Game</button>

@@ -85,8 +85,10 @@
       if (document.hidden) {
         $('reveal-content').classList.add('hidden');
         $('recheck-content').classList.add('hidden');
-        var holdBtns = document.querySelectorAll('.btn-hold.holding');
-        holdBtns.forEach(function(b) { b.classList.remove('holding'); });
+        // Clear all hold states (both circle and reveal-impostor buttons)
+        document.querySelectorAll('.btn-hold.holding, .btn-reveal-impostor.holding').forEach(function(b) {
+          b.classList.remove('holding');
+        });
       }
     });
 
@@ -248,17 +250,12 @@
     // Timer toggle
     $('toggle-timer').addEventListener('change', e => {
       settings.timerEnabled = e.target.checked;
-      $('timer-label').textContent = e.target.checked ? 'On' : 'Off';
-      $('timer-options').classList.toggle('hidden', !e.target.checked);
+      $('timer-duration').disabled = !e.target.checked;
     });
 
-    // Timer duration toggles
-    document.querySelectorAll('[data-time]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('[data-time]').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        settings.timerDuration = parseInt(btn.dataset.time);
-      });
+    // Timer duration select
+    $('timer-duration').addEventListener('change', e => {
+      settings.timerDuration = parseInt(e.target.value);
     });
 
     $('btn-settings-back').addEventListener('click', () => {
@@ -308,6 +305,15 @@
       });
       grid.appendChild(btn);
     });
+
+    // Scroll fade indicator
+    var wrapper = grid.parentElement;
+    function checkScroll() {
+      var atBottom = grid.scrollHeight - grid.scrollTop - grid.clientHeight < 8;
+      wrapper.classList.toggle('scrolled-bottom', atBottom);
+    }
+    grid.addEventListener('scroll', checkScroll);
+    checkScroll();
   }
 
   function applySettingsToUI() {
@@ -318,13 +324,8 @@
 
     // Timer
     $('toggle-timer').checked = settings.timerEnabled;
-    $('timer-label').textContent = settings.timerEnabled ? 'On' : 'Off';
-    $('timer-options').classList.toggle('hidden', !settings.timerEnabled);
-
-    // Timer duration
-    document.querySelectorAll('[data-time]').forEach(b => {
-      b.classList.toggle('active', parseInt(b.dataset.time) === settings.timerDuration);
-    });
+    $('timer-duration').disabled = !settings.timerEnabled;
+    $('timer-duration').value = settings.timerDuration;
   }
 
   // --- Game Start ---
@@ -345,8 +346,13 @@
     });
 
     // Hold-to-reveal
-    setupHoldButton($('btn-hold-reveal'), $('reveal-content'), () => {
-      showRevealContent(revealIndex);
+    setupHoldButton($('btn-hold-reveal'), $('reveal-content'), {
+      hintEl: $('reveal-hold-hint'),
+      onShow: function() { showRevealContent(revealIndex); },
+      onRelease: function() {
+        $('btn-got-it').classList.remove('hidden');
+        $('btn-got-it').disabled = false;
+      }
     });
 
     $('btn-got-it').addEventListener('click', () => {
@@ -357,19 +363,18 @@
         startPlaying();
       }
     });
-
-    $('btn-show-again').addEventListener('click', () => {
-      $('reveal-confirm').classList.add('hidden');
-      $('reveal-hold').classList.remove('hidden');
-    });
   }
 
   function startReveal() {
     $('reveal-pass').classList.remove('hidden');
     $('reveal-hold').classList.add('hidden');
-    $('reveal-confirm').classList.add('hidden');
     $('reveal-content').classList.add('hidden');
-    $('reveal-player-name').textContent = game.players[revealIndex];
+    $('reveal-hold-hint').classList.remove('hidden');
+    $('btn-got-it').classList.add('hidden');
+    $('btn-got-it').disabled = true;
+    var name = game.players[revealIndex];
+    $('reveal-player-name').textContent = name;
+    $('reveal-hold-name').textContent = name;
     showScreen('reveal');
   }
 
@@ -382,8 +387,8 @@
     if (reveal.isImpostor) {
       roleEl.textContent = 'IMPOSTOR';
       roleEl.className = 'role-text impostor';
-      wordEl.textContent = reveal.hint;
-      hintEl.textContent = 'Category: ' + reveal.category;
+      wordEl.textContent = '';
+      hintEl.textContent = 'Your hint: ' + reveal.hint + '\nCategory: ' + reveal.category;
     } else {
       roleEl.textContent = 'Civilian';
       roleEl.className = 'role-text civilian';
@@ -392,34 +397,48 @@
     }
   }
 
-  function setupHoldButton(btn, contentEl, onShow) {
+  function setupHoldButton(btn, contentEl, opts) {
+    var onShow = opts && opts.onShow;
+    var onRelease = opts && opts.onRelease;
+    var hintEl = opts && opts.hintEl;
     let holding = false;
+    let isTouch = false;
 
     function startHold(e) {
       e.preventDefault();
+      if (e.type === 'touchstart') isTouch = true;
+      if (e.type === 'mousedown' && isTouch) return;
       holding = true;
       btn.classList.add('holding');
       if (onShow) onShow();
       contentEl.classList.remove('hidden');
+      if (hintEl) hintEl.classList.add('hidden');
     }
 
     function endHold(e) {
       if (e) e.preventDefault();
+      // Ignore synthetic mouse events on touch devices
+      if (e && isTouch && (e.type === 'mouseleave' || e.type === 'mouseup')) return;
       if (!holding) return;
       holding = false;
+      isTouch = false;
       btn.classList.remove('holding');
       contentEl.classList.add('hidden');
+      if (hintEl) hintEl.classList.remove('hidden');
 
-      // Show confirm state (for role reveal, not re-check)
-      if (btn === $('btn-hold-reveal')) {
-        $('reveal-hold').classList.add('hidden');
-        $('reveal-confirm').classList.remove('hidden');
+      if (onRelease) {
+        onRelease();
       }
+    }
+
+    function preventMove(e) {
+      if (holding) e.preventDefault();
     }
 
     btn.addEventListener('touchstart', startHold, { passive: false });
     btn.addEventListener('touchend', endHold, { passive: false });
     btn.addEventListener('touchcancel', endHold, { passive: false });
+    btn.addEventListener('touchmove', preventMove, { passive: false });
     btn.addEventListener('mousedown', startHold);
     btn.addEventListener('mouseup', endHold);
     btn.addEventListener('mouseleave', endHold);
@@ -437,40 +456,101 @@
     });
 
     // Hold-to-reveal for recheck
-    setupHoldButton($('btn-hold-recheck'), $('recheck-content'), null);
+    setupHoldButton($('btn-hold-recheck'), $('recheck-content'), {
+      hintEl: $('recheck-hold-hint')
+    });
 
     $('btn-recheck-done').addEventListener('click', () => {
       $('recheck-overlay').classList.add('hidden');
       $('recheck-content').classList.add('hidden');
     });
 
-    var revealConfirmTimeout = null;
-    $('btn-reveal-impostor').addEventListener('click', () => {
-      $('btn-reveal-impostor').classList.add('hidden');
-      $('btn-reveal-confirm').classList.remove('hidden');
-      // Auto-reset after 3 seconds if not confirmed
-      clearTimeout(revealConfirmTimeout);
-      revealConfirmTimeout = setTimeout(() => {
-        $('btn-reveal-confirm').classList.add('hidden');
-        $('btn-reveal-impostor').classList.remove('hidden');
-      }, 3000);
-    });
+    // Timed hold-to-reveal for impostor (3 second hold required)
+    (function() {
+      var btn = $('btn-reveal-impostor');
+      var fillEl = btn.querySelector('.reveal-impostor-fill');
+      var textEl = btn.querySelector('.reveal-impostor-text');
+      var countdownEl = btn.querySelector('.reveal-impostor-countdown');
+      var holdTimer = null;
+      var holding = false;
+      var isTouch = false;
+      var TOTAL = 3;
 
-    $('btn-reveal-confirm').addEventListener('click', () => {
-      clearTimeout(revealConfirmTimeout);
-      $('btn-reveal-confirm').classList.add('hidden');
-      $('btn-reveal-impostor').classList.remove('hidden');
-      stopTimer();
-      showResults();
-    });
+      function startHold(e) {
+        e.preventDefault();
+        if (e.type === 'touchstart') isTouch = true;
+        if (e.type === 'mousedown' && isTouch) return;
+        holding = true;
+        btn.classList.add('holding');
+        countdownEl.classList.remove('hidden');
+        textEl.classList.add('hidden');
+
+        var remaining = TOTAL;
+        countdownEl.textContent = remaining + '...';
+        // Reset fill bar then start one smooth continuous animation
+        fillEl.style.transition = 'none';
+        fillEl.style.width = '0%';
+        void fillEl.offsetWidth;
+        fillEl.style.transition = 'width ' + TOTAL + 's linear';
+        fillEl.style.width = '100%';
+
+        // Countdown text only — fill runs independently via CSS
+        holdTimer = setInterval(function() {
+          remaining--;
+          if (remaining > 0) {
+            countdownEl.textContent = remaining + '...';
+          } else {
+            clearInterval(holdTimer);
+            holdTimer = null;
+            holding = false;
+            resetBtn();
+            stopTimer();
+            showResults();
+          }
+        }, 1000);
+      }
+
+      function resetBtn() {
+        btn.classList.remove('holding');
+        countdownEl.classList.add('hidden');
+        textEl.classList.remove('hidden');
+        fillEl.style.transition = 'none';
+        fillEl.style.width = '0%';
+      }
+
+      function endHold(e) {
+        if (e) e.preventDefault();
+        if (e && isTouch && (e.type === 'mouseleave' || e.type === 'mouseup')) return;
+        if (!holding) return;
+        holding = false;
+        isTouch = false;
+        if (holdTimer) { clearInterval(holdTimer); holdTimer = null; }
+        resetBtn();
+      }
+
+      function preventMove(e) {
+        if (holding) e.preventDefault();
+      }
+
+      btn.addEventListener('touchstart', startHold, { passive: false });
+      btn.addEventListener('touchend', endHold, { passive: false });
+      btn.addEventListener('touchcancel', endHold, { passive: false });
+      btn.addEventListener('touchmove', preventMove, { passive: false });
+      btn.addEventListener('mousedown', startHold);
+      btn.addEventListener('mouseup', endHold);
+      btn.addEventListener('mouseleave', endHold);
+    })();
   }
 
   function startPlaying() {
-    renderPlayingPlayerList();
-
-    // Reset reveal confirm state
-    $('btn-reveal-confirm').classList.add('hidden');
-    $('btn-reveal-impostor').classList.remove('hidden');
+    // Reset reveal impostor button state
+    var revealBtn = $('btn-reveal-impostor');
+    revealBtn.classList.remove('holding');
+    revealBtn.querySelector('.reveal-impostor-countdown').classList.add('hidden');
+    revealBtn.querySelector('.reveal-impostor-text').classList.remove('hidden');
+    var fillEl = revealBtn.querySelector('.reveal-impostor-fill');
+    fillEl.style.transition = 'none';
+    fillEl.style.width = '0%';
 
     // Show who goes first
     var firstName = game.players[game.firstPlayer];
@@ -491,20 +571,6 @@
     var div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
-  }
-
-  function renderPlayingPlayerList() {
-    const list = $('playing-player-list');
-    list.innerHTML = '';
-    game.players.forEach(name => {
-      const li = document.createElement('li');
-      li.className = 'player-item';
-      const span = document.createElement('span');
-      span.className = 'player-name';
-      span.textContent = name;
-      li.appendChild(span);
-      list.appendChild(li);
-    });
   }
 
   function renderCheckPlayerList() {
@@ -536,8 +602,8 @@
     if (reveal.isImpostor) {
       roleEl.textContent = 'IMPOSTOR';
       roleEl.className = 'role-text impostor';
-      wordEl.textContent = reveal.hint;
-      hintEl.textContent = 'Category: ' + reveal.category;
+      wordEl.textContent = '';
+      hintEl.textContent = 'Your hint: ' + reveal.hint + '\nCategory: ' + reveal.category;
     } else {
       roleEl.textContent = 'Civilian';
       roleEl.className = 'role-text civilian';

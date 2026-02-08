@@ -45,6 +45,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* === Generic hidden === */
+.hidden {
+  display: none;
+}
+
 /* === Screens === */
 .screen {
   position: absolute;
@@ -131,6 +136,11 @@ h3 {
   transform: scale(0.96);
 }
 
+.btn-hold:active,
+.btn-reveal-impostor:active {
+  transform: none;
+}
+
 .btn:disabled {
   opacity: 0.4;
   cursor: default;
@@ -160,6 +170,70 @@ h3 {
   width: 100%;
 }
 
+/* === Reveal Impostor Button === */
+.btn-reveal-impostor {
+  font-family: var(--font);
+  font-size: 1rem;
+  font-weight: 600;
+  width: 100%;
+  padding: 16px 28px;
+  border: 2px solid var(--danger);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--danger);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  min-height: 52px;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+.reveal-impostor-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  background: var(--danger);
+  transition: width 1s linear;
+  z-index: 0;
+}
+
+.reveal-impostor-text,
+.reveal-impostor-countdown {
+  position: relative;
+  z-index: 1;
+}
+
+.btn-reveal-impostor.holding .reveal-impostor-text,
+.btn-reveal-impostor.holding .reveal-impostor-countdown {
+  color: #fff;
+}
+
+.reveal-impostor-countdown.hidden {
+  display: none;
+}
+
+.playing-heading {
+  color: var(--accent);
+  font-size: 1.75rem;
+  letter-spacing: 0.04em;
+}
+
+.playing-rules {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.playing-actions {
+  margin-top: 16px;
+}
+
 .btn-small {
   background: var(--accent);
   color: #fff;
@@ -176,6 +250,7 @@ h3 {
   font-size: 1.125rem;
   position: relative;
   overflow: hidden;
+  touch-action: none;
 }
 
 .btn-hold::before {
@@ -306,11 +381,43 @@ input[type="text"]::placeholder {
 }
 
 /* === Category Grid === */
+.category-grid-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.category-grid-wrapper::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 32px;
+  background: linear-gradient(transparent, var(--bg));
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 0.2s ease;
+}
+
+.category-grid-wrapper.scrolled-bottom::after {
+  opacity: 0;
+}
+
 .category-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
   width: 100%;
+  max-height: 30vh;
+  overflow-y: auto;
+  padding: 4px 4px 28px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.category-grid::-webkit-scrollbar {
+  display: none;
 }
 
 .category-btn {
@@ -386,13 +493,39 @@ input[type="text"]::placeholder {
   transform: translateX(22px);
 }
 
-/* === Timer Options === */
-.timer-options {
-  width: 100%;
+/* === Timer Select === */
+.timer-select {
+  font-family: var(--font);
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: var(--bg-input);
+  color: var(--text);
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  min-height: 40px;
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238a8a9a' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
 }
 
-.timer-options.hidden {
-  display: none;
+.timer-select:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.timer-select:focus {
+  border-color: var(--accent);
+}
+
+.timer-select option {
+  background: var(--bg-card);
+  color: var(--text);
 }
 
 /* === Setting Groups === */
@@ -401,6 +534,28 @@ input[type="text"]::placeholder {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.setting-group-compact {
+  gap: 8px;
+}
+
+.setting-labeled-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 12px;
+}
+
+.setting-labeled-row h3 {
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.toggle-row-fit {
+  width: auto;
+  flex-shrink: 0;
 }
 
 /* === Role Reveal === */
@@ -439,6 +594,55 @@ input[type="text"]::placeholder {
   display: none;
 }
 
+/* Hold screen layout */
+.reveal-hold-layout {
+  justify-content: center;
+}
+
+.reveal-hold-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing);
+}
+
+/* Fixed-height area that holds either the hint or the revealed content */
+.reveal-info-area {
+  position: relative;
+  width: 100%;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reveal-info-area > .hint {
+  position: absolute;
+  transition: opacity 0.15s ease;
+}
+
+.reveal-info-area > .hint.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.reveal-float {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  width: 100%;
+  height: 100%;
+}
+
+.reveal-float.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .role-text {
   font-size: 1rem;
   font-weight: 700;
@@ -463,11 +667,11 @@ input[type="text"]::placeholder {
 .hint-text {
   color: var(--text-dim);
   font-size: 1rem;
+  white-space: pre-line;
 }
 
-.confirm-text {
-  font-size: 1.125rem;
-  text-align: center;
+.btn-got-it {
+  margin-top: 24px;
 }
 
 /* === Timer Display === */
@@ -540,11 +744,6 @@ input[type="text"]::placeholder {
   color: var(--accent);
 }
 
-/* === Playing List === */
-.playing-list .player-item {
-  cursor: default;
-}
-
 .check-list .player-item {
   cursor: pointer;
   transition: background 0.15s ease;
@@ -558,7 +757,7 @@ input[type="text"]::placeholder {
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.85);
+  background: var(--bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -641,6 +840,10 @@ input[type="text"]::placeholder {
   animation-delay: 0.2s;
 }
 
+.results-actions {
+  margin-top: 32px;
+}
+
 /* === Landscape hint === */
 @media (orientation: landscape) and (max-height: 500px) {
   .screen-content {
@@ -675,10 +878,25 @@ input[type="text"]::placeholder {
 
 .custom-editor .input-row {
   gap: 6px;
+  flex-wrap: wrap;
+}
+
+.custom-editor .input-row input[type="text"] {
+  min-width: 0;
+}
+
+.custom-editor #input-word {
+  flex: 2;
+  min-width: 100px;
 }
 
 .custom-editor #input-hint {
-  max-width: 120px;
+  flex: 1;
+  min-width: 80px;
+}
+
+.custom-editor #btn-add-word {
+  flex-shrink: 0;
 }
 
 /* === Check word warning === */
