@@ -1,8 +1,18 @@
 # Impostor
 
-A pass-and-play party game for your phone. One device, passed around the room — no installs, no accounts, no internet needed after first load.
+Pass-and-play party game — one phone passed around the room. Everyone gets a secret word except the impostor, who has to fake it. Give one-word clues, argue about it, vote someone out.
 
-Everyone gets a secret word except the impostor. Take turns giving one-word clues, debate who's faking it, and vote. The impostor tries to blend in without knowing the word.
+<p align="center">
+  <img src="img/home.png" alt="Home" width="150">
+  &nbsp;
+  <img src="img/settings.png" alt="Settings" width="150">
+  &nbsp;
+  <img src="img/role-reveal.png" alt="Role reveal" width="150">
+  &nbsp;
+  <img src="img/playing.png" alt="Playing" width="150">
+  &nbsp;
+  <img src="img/results.png" alt="Results" width="150">
+</p>
 
 ## Play it
 
@@ -26,13 +36,13 @@ Then open http://localhost:8080 on your phone.
 
 ## Features
 
-- **Hold-to-reveal** — peek at your word without anyone else seeing
+- **Hold-to-reveal** — hold a button to peek at your word, release to hide it
 - **15 built-in word packs** with 500+ words and hints
 - **Custom word packs** — add your own
 - **Timer** — optional round timer (1–10 min)
-- **1 or 2 impostors** — scale the chaos
-- **Offline-first** — works without internet after first load (PWA with service worker)
-- **Installable** — add to home screen for an app-like experience
+- **1 or 2 impostors**
+- **Offline-first PWA** — works without internet, installable to home screen
+  - On iOS: tap Share → "Add to Home Screen"
 
 ## Tech
 

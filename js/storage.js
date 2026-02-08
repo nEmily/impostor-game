@@ -6,6 +6,7 @@ var Storage = (function () {
   const KEYS = {
     settings: 'impostor_settings',
     players: 'impostor_players',
+    playerSetup: 'impostor_player_setup',
     customPacks: 'impostor_custom_packs'
   };
 
@@ -39,6 +40,36 @@ var Storage = (function () {
     }
   }
 
+  function savePlayerSetup(setup) {
+    try {
+      localStorage.setItem(KEYS.playerSetup, JSON.stringify(setup));
+    } catch (e) { /* quota exceeded */ }
+  }
+
+  function loadPlayerSetup() {
+    try {
+      var raw = localStorage.getItem(KEYS.playerSetup);
+      if (raw) return JSON.parse(raw);
+      // Migrate from old impostor_players array
+      var oldRaw = localStorage.getItem(KEYS.players);
+      if (oldRaw) {
+        var oldPlayers = JSON.parse(oldRaw);
+        if (Array.isArray(oldPlayers) && oldPlayers.length > 0) {
+          var customNames = {};
+          oldPlayers.forEach(function(name, i) {
+            customNames[i] = name;
+          });
+          var setup = { count: oldPlayers.length, customNames: customNames };
+          savePlayerSetup(setup);
+          return setup;
+        }
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   function saveCustomPacks(packs) {
     try {
       localStorage.setItem(KEYS.customPacks, JSON.stringify(packs));
@@ -54,7 +85,7 @@ var Storage = (function () {
     }
   }
 
-  return { saveSettings, loadSettings, savePlayers, loadPlayers, saveCustomPacks, loadCustomPacks };
+  return { saveSettings, loadSettings, savePlayers, loadPlayers, savePlayerSetup, loadPlayerSetup, saveCustomPacks, loadCustomPacks };
 })();
 
 // Node.js compat for testing

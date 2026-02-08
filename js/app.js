@@ -27,11 +27,12 @@
 
   // --- State ---
   let players = [];
+  let playerSetup = { count: 5, customNames: {} };
+  let namesExpanded = false;
   let game = null;
   let revealIndex = 0;
   let timerInterval = null;
   let timerRemaining = 0;
-  const tapCounts = {}; // for secret immunity: playerName -> { count, lastTap }
 
   // --- Settings State ---
   let settings = {
@@ -57,10 +58,10 @@
       settings = { ...settings, ...saved };
     }
 
-    // Load saved players
-    const savedPlayers = Storage.loadPlayers();
-    if (savedPlayers && savedPlayers.length > 0) {
-      players = savedPlayers;
+    // Load saved player setup
+    const savedSetup = Storage.loadPlayerSetup();
+    if (savedSetup) {
+      playerSetup = savedSetup;
     }
 
     // Load custom word packs
@@ -116,53 +117,35 @@
   // --- Home ---
   function wireHome() {
     $('btn-new-game').addEventListener('click', () => {
-      players = [];
-      const savedPlayers = Storage.loadPlayers();
-      if (savedPlayers && savedPlayers.length > 0) {
-        players = savedPlayers;
+      const savedSetup = Storage.loadPlayerSetup();
+      if (savedSetup) {
+        playerSetup = savedSetup;
       }
-      renderPlayerList();
+      namesExpanded = false;
+      renderSetupScreen();
       showScreen('setup');
-      $('input-player-name').focus();
     });
   }
 
   // --- Setup ---
   function wireSetup() {
-    const input = $('input-player-name');
-    const addBtn = $('btn-add-player');
-
-    function addPlayer() {
-      const name = input.value.trim();
-      if (!name) return;
-      if (players.length >= 24) {
-        showSetupHint('Maximum 24 players');
-        return;
+    $('btn-stepper-minus').addEventListener('click', () => {
+      if (playerSetup.count > 3) {
+        playerSetup.count--;
+        renderSetupScreen();
       }
-      if (players.some(p => p.toLowerCase() === name.toLowerCase())) {
-        showSetupHint('"' + name + '" is already added');
-        input.value = '';
-        return;
-      }
-      players.push(name);
-      input.value = '';
-      renderPlayerList();
-      input.focus();
-    }
+    });
 
-    function showSetupHint(msg) {
-      var count = $('player-count');
-      count.textContent = msg;
-      count.classList.add('hint-flash');
-      setTimeout(function() { count.classList.remove('hint-flash'); }, 1500);
-    }
-
-    addBtn.addEventListener('click', addPlayer);
-    input.addEventListener('keydown', e => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        addPlayer();
+    $('btn-stepper-plus').addEventListener('click', () => {
+      if (playerSetup.count < 24) {
+        playerSetup.count++;
+        renderSetupScreen();
       }
+    });
+
+    $('btn-customize-names').addEventListener('click', () => {
+      namesExpanded = !namesExpanded;
+      renderSetupScreen();
     });
 
     $('btn-setup-back').addEventListener('click', () => {
@@ -170,7 +153,9 @@
     });
 
     $('btn-setup-next').addEventListener('click', () => {
-      if (players.length < 3) return;
+      // Build flat players array for game compat
+      players = buildPlayerList();
+      Storage.savePlayerSetup(playerSetup);
       Storage.savePlayers(players);
       renderCategories();
       applySettingsToUI();
@@ -178,61 +163,54 @@
     });
   }
 
-  function renderPlayerList() {
-    const list = $('player-list');
-    list.innerHTML = '';
-    players.forEach((name, i) => {
-      const li = document.createElement('li');
-      li.className = 'player-item';
-
-      const span = document.createElement('span');
-      span.className = 'player-name';
-      span.textContent = name;
-
-      // Secret immunity: 10x rapid tap
-      span.addEventListener('click', () => {
-        handleSecretTap(name);
-      });
-
-      const removeBtn = document.createElement('button');
-      removeBtn.className = 'player-remove';
-      removeBtn.textContent = '\u00d7';
-      removeBtn.setAttribute('aria-label', 'Remove ' + name);
-      removeBtn.addEventListener('click', () => {
-        players.splice(i, 1);
-        delete tapCounts[name];
-        renderPlayerList();
-      });
-
-      li.appendChild(span);
-      li.appendChild(removeBtn);
-      list.appendChild(li);
-    });
-
-    const count = $('player-count');
-    count.textContent = players.length < 3
-      ? `Add at least ${3 - players.length} more player${3 - players.length === 1 ? '' : 's'}`
-      : `${players.length} player${players.length === 1 ? '' : 's'}`;
-
-    $('btn-setup-next').disabled = players.length < 3;
+  function buildPlayerList() {
+    var list = [];
+    for (var i = 0; i < playerSetup.count; i++) {
+      list.push(playerSetup.customNames[i] || ('Player ' + (i + 1)));
+    }
+    return list;
   }
 
-  function handleSecretTap(name) {
-    const now = Date.now();
-    if (!tapCounts[name]) {
-      tapCounts[name] = { count: 0, lastTap: 0 };
-    }
-    const entry = tapCounts[name];
-    // Reset if more than 500ms between taps
-    if (now - entry.lastTap > 500) {
-      entry.count = 0;
-    }
-    entry.count++;
-    entry.lastTap = now;
-    if (entry.count >= 10) {
-      // Toggle immunity silently
-      Game.toggleImmunity(name);
-      entry.count = 0;
+  function renderSetupScreen() {
+    $('stepper-count').textContent = playerSetup.count;
+    $('btn-stepper-minus').disabled = playerSetup.count <= 3;
+    $('btn-stepper-plus').disabled = playerSetup.count >= 24;
+
+    var list = $('player-list');
+    var link = $('btn-customize-names');
+
+    if (namesExpanded) {
+      link.textContent = 'Hide names';
+      list.classList.remove('hidden');
+      list.innerHTML = '';
+      for (var i = 0; i < playerSetup.count; i++) {
+        var li = document.createElement('li');
+        li.className = 'player-item';
+        var span = document.createElement('span');
+        span.className = 'player-name';
+        span.textContent = playerSetup.customNames[i] || ('Player ' + (i + 1));
+        // Tap to rename
+        (function(idx) {
+          li.addEventListener('click', function() {
+            var current = playerSetup.customNames[idx] || ('Player ' + (idx + 1));
+            var newName = prompt('Rename player ' + (idx + 1) + ':', current);
+            if (newName !== null) {
+              newName = newName.trim();
+              if (newName) {
+                playerSetup.customNames[idx] = newName;
+              } else {
+                delete playerSetup.customNames[idx];
+              }
+              renderSetupScreen();
+            }
+          });
+        })(i);
+        li.appendChild(span);
+        list.appendChild(li);
+      }
+    } else {
+      link.textContent = 'Customize names';
+      list.classList.add('hidden');
     }
   }
 
@@ -259,6 +237,7 @@
     });
 
     $('btn-settings-back').addEventListener('click', () => {
+      renderSetupScreen();
       showScreen('setup');
     });
 
@@ -350,7 +329,7 @@
       hintEl: $('reveal-hold-hint'),
       onShow: function() { showRevealContent(revealIndex); },
       onRelease: function() {
-        $('btn-got-it').classList.remove('hidden');
+        $('btn-got-it').classList.remove('invisible');
         $('btn-got-it').disabled = false;
       }
     });
@@ -370,7 +349,7 @@
     $('reveal-hold').classList.add('hidden');
     $('reveal-content').classList.add('hidden');
     $('reveal-hold-hint').classList.remove('hidden');
-    $('btn-got-it').classList.add('hidden');
+    $('btn-got-it').classList.add('invisible');
     $('btn-got-it').disabled = true;
     var name = game.players[revealIndex];
     $('reveal-player-name').textContent = name;
@@ -388,12 +367,12 @@
       roleEl.textContent = 'IMPOSTOR';
       roleEl.className = 'role-text impostor';
       wordEl.textContent = '';
-      hintEl.textContent = 'Your hint: ' + reveal.hint + '\nCategory: ' + reveal.category;
+      hintEl.innerHTML = '<span>Your hint: ' + escapeHtml(reveal.hint) + '</span><br><span class="hint-category">Category: ' + escapeHtml(reveal.category) + '</span>';
     } else {
       roleEl.textContent = 'Civilian';
       roleEl.className = 'role-text civilian';
       wordEl.textContent = reveal.word;
-      hintEl.textContent = '';
+      hintEl.innerHTML = '';
     }
   }
 
@@ -603,12 +582,12 @@
       roleEl.textContent = 'IMPOSTOR';
       roleEl.className = 'role-text impostor';
       wordEl.textContent = '';
-      hintEl.textContent = 'Your hint: ' + reveal.hint + '\nCategory: ' + reveal.category;
+      hintEl.innerHTML = '<span>Your hint: ' + escapeHtml(reveal.hint) + '</span><br><span class="hint-category">Category: ' + escapeHtml(reveal.category) + '</span>';
     } else {
       roleEl.textContent = 'Civilian';
       roleEl.className = 'role-text civilian';
       wordEl.textContent = reveal.word;
-      hintEl.textContent = '';
+      hintEl.innerHTML = '';
     }
 
     $('recheck-content').classList.add('hidden');

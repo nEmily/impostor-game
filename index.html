@@ -28,15 +28,16 @@
   <section id="screen-setup" class="screen hidden" aria-label="Player Setup">
     <div class="screen-content">
       <h2>Players</h2>
-      <div class="input-row">
-        <input type="text" id="input-player-name" placeholder="Enter name" maxlength="20" autocomplete="off" enterkeyhint="done">
-        <button id="btn-add-player" class="btn btn-small">Add</button>
+      <div class="stepper">
+        <button id="btn-stepper-minus" class="btn btn-stepper" aria-label="Decrease">−</button>
+        <span id="stepper-count" class="stepper-count">5</span>
+        <button id="btn-stepper-plus" class="btn btn-stepper" aria-label="Increase">+</button>
       </div>
-      <ul id="player-list" class="player-list"></ul>
-      <p id="player-count" class="hint">Add at least 3 players</p>
+      <a id="btn-customize-names" class="link-subtle">Customize names</a>
+      <ul id="player-list" class="player-list hidden"></ul>
       <div class="btn-row">
         <button id="btn-setup-back" class="btn btn-secondary">Back</button>
-        <button id="btn-setup-next" class="btn btn-primary" disabled>Next</button>
+        <button id="btn-setup-next" class="btn btn-primary">Next</button>
       </div>
     </div>
   </section>
@@ -51,7 +52,7 @@
         <div class="category-grid-wrapper">
           <div id="category-list" class="category-grid"></div>
         </div>
-        <button id="btn-custom-packs" class="btn btn-secondary btn-compact">+ Custom Pack</button>
+        <a id="btn-custom-packs" class="link-subtle">Add custom pack</a>
       </div>
 
       <div class="setting-group setting-group-compact">
@@ -111,7 +112,7 @@
             <span class="hold-text">Hold</span>
           </button>
         </div>
-        <button id="btn-got-it" class="btn btn-primary btn-got-it hidden" disabled>Got it!</button>
+        <button id="btn-got-it" class="btn btn-primary btn-got-it invisible" disabled>Got it!</button>
       </div>
     </div>
   </section>

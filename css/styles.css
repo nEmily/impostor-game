@@ -50,6 +50,12 @@ body {
   display: none;
 }
 
+.invisible {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* === Screens === */
 .screen {
   position: absolute;
@@ -334,6 +340,39 @@ input[type="text"]::placeholder {
   color: var(--text-muted);
 }
 
+/* === Stepper === */
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  justify-content: center;
+}
+
+.btn-stepper {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--bg-input);
+  color: var(--text);
+  font-size: 1.5rem;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-stepper:disabled {
+  opacity: 0.25;
+}
+
+.stepper-count {
+  font-size: 3rem;
+  font-weight: 700;
+  min-width: 72px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
 /* === Player List === */
 .player-list {
   list-style: none;
@@ -378,6 +417,16 @@ input[type="text"]::placeholder {
 
 .player-remove:hover {
   color: var(--danger);
+}
+
+/* Tappable name rows in setup */
+#player-list .player-item {
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+#player-list .player-item:active {
+  background: var(--bg-input);
 }
 
 /* === Category Grid === */
@@ -529,15 +578,30 @@ input[type="text"]::placeholder {
 }
 
 /* === Setting Groups === */
+#screen-settings .screen-content {
+  gap: 12px;
+}
+
 .setting-group {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .setting-group-compact {
   gap: 8px;
+}
+
+/* Subtle text link (used for "Add custom pack") */
+.link-subtle {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  align-self: center;
 }
 
 .setting-labeled-row {
@@ -667,7 +731,12 @@ input[type="text"]::placeholder {
 .hint-text {
   color: var(--text-dim);
   font-size: 1rem;
-  white-space: pre-line;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.hint-category {
+  white-space: nowrap;
 }
 
 .btn-got-it {
