@@ -39,7 +39,9 @@
     categories: [],
     impostorCount: 1,
     timerEnabled: false,
-    timerDuration: 120
+    timerDuration: 120,
+    hintsEnabled: true,
+    wordPreviewEnabled: false
   };
 
   // --- DOM refs ---
@@ -177,11 +179,12 @@
     $('btn-stepper-plus').disabled = playerSetup.count >= 24;
 
     var list = $('player-list');
+    var wrapper = $('player-list-wrapper');
     var link = $('btn-customize-names');
 
     if (namesExpanded) {
       link.textContent = 'Hide names';
-      list.classList.remove('hidden');
+      wrapper.classList.remove('hidden');
       list.innerHTML = '';
       for (var i = 0; i < playerSetup.count; i++) {
         var li = document.createElement('li');
@@ -189,10 +192,11 @@
         var span = document.createElement('span');
         span.className = 'player-name';
         span.textContent = playerSetup.customNames[i] || ('Player ' + (i + 1));
-        // Tap to rename
+        // Tap to rename — clear default name for easier editing
         (function(idx) {
           li.addEventListener('click', function() {
-            var current = playerSetup.customNames[idx] || ('Player ' + (idx + 1));
+            var isDefault = !playerSetup.customNames[idx];
+            var current = isDefault ? '' : playerSetup.customNames[idx];
             var newName = prompt('Rename player ' + (idx + 1) + ':', current);
             if (newName !== null) {
               newName = newName.trim();
@@ -208,9 +212,16 @@
         li.appendChild(span);
         list.appendChild(li);
       }
+      // Scroll fade indicator
+      function checkSetupScroll() {
+        var atBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 8;
+        wrapper.classList.toggle('scrolled-bottom', atBottom);
+      }
+      list.addEventListener('scroll', checkSetupScroll);
+      checkSetupScroll();
     } else {
       link.textContent = 'Customize names';
-      list.classList.add('hidden');
+      wrapper.classList.add('hidden');
     }
   }
 
@@ -223,6 +234,16 @@
         btn.classList.add('active');
         settings.impostorCount = parseInt(btn.dataset.impostors);
       });
+    });
+
+    // Hints toggle
+    $('toggle-hints').addEventListener('change', e => {
+      settings.hintsEnabled = e.target.checked;
+    });
+
+    // Word Preview toggle
+    $('toggle-word-preview').addEventListener('change', e => {
+      settings.wordPreviewEnabled = e.target.checked;
     });
 
     // Timer toggle
@@ -301,6 +322,12 @@
       b.classList.toggle('active', parseInt(b.dataset.impostors) === settings.impostorCount);
     });
 
+    // Hints
+    $('toggle-hints').checked = settings.hintsEnabled !== false;
+
+    // Word Preview
+    $('toggle-word-preview').checked = !!settings.wordPreviewEnabled;
+
     // Timer
     $('toggle-timer').checked = settings.timerEnabled;
     $('timer-duration').disabled = !settings.timerEnabled;
@@ -367,12 +394,29 @@
       roleEl.textContent = 'IMPOSTOR';
       roleEl.className = 'role-text impostor';
       wordEl.textContent = '';
-      hintEl.innerHTML = '<span>Your hint: ' + escapeHtml(reveal.hint) + '</span><br><span class="hint-category">Category: ' + escapeHtml(reveal.category) + '</span>';
+      var hintHtml = '';
+      if (reveal.hint) {
+        hintHtml += '<span>Your hint: ' + escapeHtml(reveal.hint) + '</span><br>';
+      }
+      hintHtml += '<span class="hint-category">Category: ' + escapeHtml(reveal.category) + '</span>';
+      hintEl.innerHTML = hintHtml;
+
+      // Start word carousel if enabled
+      if (settings.wordPreviewEnabled && reveal.sampleWords && reveal.sampleWords.length > 0) {
+        startCarousel($('word-carousel'), reveal.sampleWords);
+      } else {
+        stopCarousel();
+        var carousel = $('word-carousel');
+        if (carousel) carousel.classList.add('hidden');
+      }
     } else {
       roleEl.textContent = 'Civilian';
       roleEl.className = 'role-text civilian';
       wordEl.textContent = reveal.word;
       hintEl.innerHTML = '';
+      stopCarousel();
+      var carousel = $('word-carousel');
+      if (carousel) carousel.classList.add('hidden');
     }
   }
 
@@ -404,6 +448,7 @@
       btn.classList.remove('holding');
       contentEl.classList.add('hidden');
       if (hintEl) hintEl.classList.remove('hidden');
+      stopCarousel();
 
       if (onRelease) {
         onRelease();
@@ -552,8 +597,39 @@
     return div.innerHTML;
   }
 
+  // --- Word Carousel ---
+  var carouselTimer = null;
+  var carouselIndex = 0;
+
+  function startCarousel(el, words) {
+    if (!el || !words || words.length === 0) return;
+    stopCarousel();
+    el.classList.remove('hidden');
+    var wordEl = el.querySelector('.carousel-word');
+    carouselIndex = 0;
+    wordEl.textContent = words[0];
+    wordEl.classList.remove('fade-out');
+
+    carouselTimer = setInterval(function() {
+      wordEl.classList.add('fade-out');
+      setTimeout(function() {
+        carouselIndex = (carouselIndex + 1) % words.length;
+        wordEl.textContent = words[carouselIndex];
+        wordEl.classList.remove('fade-out');
+      }, 300);
+    }, 1500);
+  }
+
+  function stopCarousel() {
+    if (carouselTimer) {
+      clearInterval(carouselTimer);
+      carouselTimer = null;
+    }
+  }
+
   function renderCheckPlayerList() {
     const list = $('check-player-list');
+    const wrapper = list.parentElement;
     list.innerHTML = '';
     game.players.forEach((name, i) => {
       const li = document.createElement('li');
@@ -568,6 +644,13 @@
       });
       list.appendChild(li);
     });
+    // Scroll fade indicator
+    function checkScroll() {
+      var atBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 8;
+      wrapper.classList.toggle('scrolled-bottom', atBottom);
+    }
+    list.addEventListener('scroll', checkScroll);
+    checkScroll();
   }
 
   function openRecheck(playerIndex) {
@@ -582,7 +665,12 @@
       roleEl.textContent = 'IMPOSTOR';
       roleEl.className = 'role-text impostor';
       wordEl.textContent = '';
-      hintEl.innerHTML = '<span>Your hint: ' + escapeHtml(reveal.hint) + '</span><br><span class="hint-category">Category: ' + escapeHtml(reveal.category) + '</span>';
+      var hintHtml = '';
+      if (reveal.hint) {
+        hintHtml += '<span>Your hint: ' + escapeHtml(reveal.hint) + '</span><br>';
+      }
+      hintHtml += '<span class="hint-category">Category: ' + escapeHtml(reveal.category) + '</span>';
+      hintEl.innerHTML = hintHtml;
     } else {
       roleEl.textContent = 'Civilian';
       roleEl.className = 'role-text civilian';

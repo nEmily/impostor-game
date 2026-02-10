@@ -13,6 +13,9 @@ var Game = (function () {
   // Session word history to avoid repeats
   const usedWords = [];
 
+  // Rolling history for fair first-player rotation
+  const firstPlayerHistory = [];
+
   function toggleImmunity(name) {
     if (immuneNames.has(name)) {
       immuneNames.delete(name);
@@ -102,14 +105,32 @@ var Game = (function () {
     if (usedWords.length > 100) {
       usedWords.splice(0, usedWords.length - 50);
     }
+
+    // All impostors get the same hint (the word's own hint)
+    game.impostorHints = {};
+    game.impostors.forEach(function(idx) {
+      game.impostorHints[idx] = word.hint;
+    });
+
+    // Store sample words for word preview carousel
+    if (word.categoryId) {
+      game.sampleWords = Words.getSampleWords(word.categoryId, word.word, 8);
+    } else {
+      game.sampleWords = [];
+    }
   }
 
   function getPlayerReveal(game, playerIndex) {
     if (game.roles[playerIndex] === 'impostor') {
+      var hintsEnabled = game.settings.hintsEnabled !== false;
+      var hint = game.impostorHints && game.impostorHints[playerIndex] != null
+        ? game.impostorHints[playerIndex]
+        : game.word.hint;
       return {
         isImpostor: true,
-        hint: game.word.hint,
-        category: game.word.category
+        hint: hintsEnabled ? hint : null,
+        category: game.word.category,
+        sampleWords: game.sampleWords || []
       };
     }
     return {
@@ -119,8 +140,19 @@ var Game = (function () {
   }
 
   function pickFirstPlayer(game) {
-    // Weighted random: civilians get 3x weight, impostors get 1x
-    const weighted = game.players.map((_, i) => ({
+    // Fair rotation: exclude players who've already gone first this cycle
+    var eligible = game.players.map((_, i) => i);
+    if (firstPlayerHistory.length > 0 && firstPlayerHistory.length < game.players.length) {
+      var remaining = eligible.filter(i => !firstPlayerHistory.includes(game.players[i]));
+      if (remaining.length > 0) eligible = remaining;
+    }
+    // Reset history when everyone has gone first
+    if (firstPlayerHistory.length >= game.players.length) {
+      firstPlayerHistory.length = 0;
+    }
+
+    // Weighted random within eligible: civilians get 3x weight, impostors get 1x
+    const weighted = eligible.map(i => ({
       index: i,
       weight: game.roles[i] === 'impostor' ? 1 : 3
     }));
@@ -130,10 +162,12 @@ var Game = (function () {
       rand -= w.weight;
       if (rand <= 0) {
         game.firstPlayer = w.index;
+        firstPlayerHistory.push(game.players[w.index]);
         return;
       }
     }
-    game.firstPlayer = 0;
+    game.firstPlayer = eligible[0];
+    firstPlayerHistory.push(game.players[eligible[0]]);
   }
 
   function getResults(game) {

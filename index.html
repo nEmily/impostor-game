@@ -34,7 +34,9 @@
         <button id="btn-stepper-plus" class="btn btn-stepper" aria-label="Increase">+</button>
       </div>
       <a id="btn-customize-names" class="link-subtle">Customize names</a>
-      <ul id="player-list" class="player-list hidden"></ul>
+      <div class="player-list-wrapper hidden" id="player-list-wrapper">
+        <ul id="player-list" class="player-list"></ul>
+      </div>
       <div class="btn-row">
         <button id="btn-setup-back" class="btn btn-secondary">Back</button>
         <button id="btn-setup-next" class="btn btn-primary">Next</button>
@@ -61,6 +63,24 @@
           <div class="toggle-row toggle-row-fit">
             <button class="btn btn-toggle active" data-impostors="1">1</button>
             <button class="btn btn-toggle" data-impostors="2">2</button>
+          </div>
+        </div>
+        <div class="setting-labeled-row">
+          <h3>Hints</h3>
+          <div class="toggle-row toggle-row-fit">
+            <label class="switch">
+              <input type="checkbox" id="toggle-hints" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="setting-labeled-row">
+          <h3>Word Preview</h3>
+          <div class="toggle-row toggle-row-fit">
+            <label class="switch">
+              <input type="checkbox" id="toggle-word-preview">
+              <span class="slider"></span>
+            </label>
           </div>
         </div>
         <div class="setting-labeled-row">
@@ -105,6 +125,9 @@
               <p id="reveal-role" class="role-text"></p>
               <p id="reveal-word" class="word-text"></p>
               <p id="reveal-hint" class="hint-text"></p>
+              <div id="word-carousel" class="word-carousel hidden">
+                <span class="carousel-word"></span>
+              </div>
             </div>
             <p id="reveal-hold-hint" class="hint">Hold to see your role</p>
           </div>
@@ -145,7 +168,9 @@
       <div class="overlay-content">
         <p class="check-warning">Only check your own word!</p>
         <p class="hint">Select your name</p>
-        <ul id="check-player-list" class="player-list check-list"></ul>
+        <div class="player-list-wrapper">
+          <ul id="check-player-list" class="player-list check-list"></ul>
+        </div>
         <button id="btn-check-cancel" class="btn btn-secondary">Cancel</button>
       </div>
     </div>

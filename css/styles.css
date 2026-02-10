@@ -429,6 +429,33 @@ input[type="text"]::placeholder {
   background: var(--bg-input);
 }
 
+/* === Player List Scroll Fade === */
+.player-list-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.player-list-wrapper::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 32px;
+  background: linear-gradient(transparent, var(--bg));
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 0.2s ease;
+}
+
+.player-list-wrapper.scrolled-bottom::after {
+  opacity: 0;
+}
+
+.player-list-wrapper.hidden {
+  display: none;
+}
+
 /* === Category Grid === */
 .category-grid-wrapper {
   position: relative;
@@ -674,7 +701,7 @@ input[type="text"]::placeholder {
 .reveal-info-area {
   position: relative;
   width: 100%;
-  height: 100px;
+  min-height: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -979,6 +1006,31 @@ input[type="text"]::placeholder {
 /* === Hint flash for setup errors === */
 .hint-flash {
   color: var(--warning) !important;
+}
+
+/* === Word Carousel === */
+.word-carousel {
+  margin-top: 4px;
+  height: 24px;
+  overflow: hidden;
+  text-align: center;
+}
+
+.word-carousel.hidden {
+  display: none;
+}
+
+.carousel-word {
+  display: inline-block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-style: italic;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.carousel-word.fade-out {
+  opacity: 0;
 }
 
 /* === Touch callout disable during gameplay === */
