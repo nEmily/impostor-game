@@ -1,27 +1,51 @@
 /* === Custom Properties === */
 :root {
-  --bg: #1a1a2e;
-  --bg-card: #16213e;
-  --bg-input: #0f3460;
-  --accent: #e94560;
-  --accent-hover: #d63851;
-  --text: #eee;
-  --text-dim: #8a8a9a;
-  --text-muted: #555;
-  --success: #4ecca3;
-  --danger: #e94560;
-  --warning: #f5a623;
-  --radius: 12px;
-  --radius-sm: 8px;
+  /* Warm dark palette */
+  --bg: #1C1410;
+  --bg-secondary: #231A12;
+  --bg-card: #2D2018;
+  --bg-input: #3A2A1A;
+  --bg-overlay: rgba(16, 10, 6, 0.97);
+
+  /* Accent — warm amber/terracotta */
+  --accent: #E8854A;
+  --accent-hover: #D4723A;
+  --accent-glow: rgba(232, 133, 74, 0.25);
+  --accent-dim: rgba(232, 133, 74, 0.15);
+
+  /* Status colors */
+  --success: #7DB87A;
+  --success-glow: rgba(125, 184, 122, 0.2);
+  --danger: #E85C4A;
+  --danger-glow: rgba(232, 92, 74, 0.25);
+  --warning: #E8C44A;
+
+  /* Text */
+  --text: #F0E8DF;
+  --text-dim: #9E8E7E;
+  --text-muted: #5C4E40;
+
+  /* Geometry */
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-lg: 20px;
   --spacing: 16px;
   --spacing-lg: 24px;
   --spacing-xl: 32px;
+
+  /* Typography */
   --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-display: 'Fredoka One', 'Nunito', var(--font);
+
+  /* Safe areas */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
 }
+
+/* === Google Font Import === */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap');
 
 /* === Reset === */
 *, *::before, *::after {
@@ -43,6 +67,11 @@ body {
   overscroll-behavior: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Subtle warm grain texture via gradient */
+  background-image:
+    radial-gradient(ellipse at 20% 10%, rgba(232, 133, 74, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 90%, rgba(232, 92, 74, 0.04) 0%, transparent 50%);
 }
 
 /* === Generic hidden === */
@@ -68,7 +97,7 @@ body {
   align-items: center;
   justify-content: center;
   opacity: 1;
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .screen.hidden {
@@ -92,32 +121,52 @@ h1, h2, h3 {
 }
 
 .title {
-  font-size: 3rem;
-  letter-spacing: 0.15em;
+  font-family: var(--font-display);
+  font-size: 4rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
   color: var(--accent);
+  text-shadow:
+    0 0 40px rgba(232, 133, 74, 0.4),
+    0 2px 12px rgba(0, 0, 0, 0.5);
+  line-height: 1;
 }
 
 .subtitle {
   color: var(--text-dim);
-  font-size: 1rem;
-  margin-top: -8px;
+  font-size: 0.9rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: -4px;
 }
 
 h2 {
   font-size: 1.5rem;
+  color: var(--text);
+  letter-spacing: 0.01em;
 }
 
 h3 {
-  font-size: 1rem;
+  font-size: 0.8rem;
   color: var(--text-dim);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
 }
 
 .hint {
   color: var(--text-dim);
   font-size: 0.875rem;
   text-align: center;
+  line-height: 1.5;
+}
+
+/* === Home Screen === */
+#screen-home .screen-content {
+  gap: var(--spacing-lg);
+}
+
+#screen-home .btn-primary {
+  margin-top: 8px;
 }
 
 /* === Buttons === */
@@ -127,15 +176,16 @@ h3 {
   font-weight: 600;
   border: none;
   border-radius: var(--radius);
-  padding: 14px 28px;
+  padding: 15px 28px;
   cursor: pointer;
-  min-height: 48px;
-  min-width: 48px;
-  transition: background 0.15s ease, transform 0.1s ease, opacity 0.15s ease;
+  min-height: 52px;
+  min-width: 52px;
+  transition: background 0.15s ease, transform 0.12s ease, opacity 0.15s ease, box-shadow 0.15s ease;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
+  letter-spacing: 0.01em;
 }
 
 .btn:active {
@@ -148,32 +198,46 @@ h3 {
 }
 
 .btn:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: default;
   transform: none;
 }
 
+/* Primary — warm amber */
 .btn-primary {
   background: var(--accent);
   color: #fff;
   width: 100%;
+  box-shadow: 0 4px 16px var(--accent-glow), 0 1px 3px rgba(0,0,0,0.3);
 }
 
 .btn-primary:active:not(:disabled) {
   background: var(--accent-hover);
+  box-shadow: 0 2px 8px var(--accent-glow);
 }
 
+/* Secondary — subtle panel button */
 .btn-secondary {
   background: var(--bg-input);
-  color: var(--text);
+  color: var(--text-dim);
   width: 100%;
+  border: 1px solid rgba(255,255,255,0.06);
 }
 
+.btn-secondary:active:not(:disabled) {
+  background: rgba(58, 42, 26, 0.8);
+}
+
+/* Danger — outlined */
 .btn-danger {
   background: transparent;
   color: var(--danger);
-  border: 2px solid var(--danger);
+  border: 1.5px solid rgba(232, 92, 74, 0.4);
   width: 100%;
+}
+
+.btn-danger:active:not(:disabled) {
+  background: var(--danger-glow);
 }
 
 /* === Reveal Impostor Button === */
@@ -182,19 +246,21 @@ h3 {
   font-size: 1rem;
   font-weight: 600;
   width: 100%;
-  padding: 16px 28px;
-  border: 2px solid var(--danger);
+  padding: 17px 28px;
+  border: 1.5px solid rgba(232, 92, 74, 0.5);
   border-radius: var(--radius);
   background: transparent;
   color: var(--danger);
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  min-height: 52px;
+  min-height: 54px;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   -webkit-user-select: none;
   touch-action: none;
+  letter-spacing: 0.01em;
+  transition: border-color 0.2s ease;
 }
 
 .reveal-impostor-fill {
@@ -203,7 +269,7 @@ h3 {
   left: 0;
   bottom: 0;
   width: 0;
-  background: var(--danger);
+  background: linear-gradient(90deg, var(--danger) 0%, #c0392b 100%);
   transition: width 1s linear;
   z-index: 0;
 }
@@ -223,40 +289,57 @@ h3 {
   display: none;
 }
 
+/* === Playing Screen === */
 .playing-heading {
-  color: var(--accent);
+  font-family: var(--font-display);
+  font-weight: 400;
+  color: var(--text);
   font-size: 1.75rem;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
 }
 
 .playing-rules {
   text-align: center;
   color: var(--text-dim);
   font-size: 0.9rem;
-  line-height: 1.6;
+  line-height: 1.7;
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  width: 100%;
+  border: 1px solid rgba(255,255,255,0.04);
 }
 
 .playing-actions {
-  margin-top: 16px;
+  margin-top: 8px;
 }
 
+/* === Small/utility buttons === */
 .btn-small {
   background: var(--accent);
   color: #fff;
   padding: 12px 20px;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px var(--accent-glow);
 }
 
+/* === Hold Button (circular) === */
 .btn-hold {
-  width: 140px;
-  height: 140px;
+  width: 148px;
+  height: 148px;
   border-radius: 50%;
-  background: var(--bg-input);
-  color: var(--text);
+  background: var(--bg-card);
+  color: var(--text-dim);
   font-size: 1.125rem;
+  font-weight: 600;
   position: relative;
   overflow: hidden;
   touch-action: none;
+  border: 2px solid rgba(255,255,255,0.07);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+  transition: box-shadow 0.2s ease;
 }
 
 .btn-hold::before {
@@ -264,7 +347,7 @@ h3 {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: var(--accent);
+  background: radial-gradient(circle, var(--accent) 0%, var(--accent-hover) 100%);
   transform: scale(0);
   transition: transform 0.15s ease;
   z-index: 0;
@@ -272,7 +355,13 @@ h3 {
 
 .btn-hold.holding::before {
   transform: scale(1);
-  transition: transform 0.3s ease;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btn-hold.holding {
+  box-shadow:
+    0 4px 32px var(--accent-glow),
+    0 0 60px rgba(232, 133, 74, 0.15);
 }
 
 .btn-hold .hold-text {
@@ -280,6 +369,7 @@ h3 {
   z-index: 1;
 }
 
+/* === Toggle Buttons (impostor count) === */
 .btn-toggle {
   background: var(--bg-input);
   color: var(--text-dim);
@@ -287,13 +377,16 @@ h3 {
   font-size: 0.875rem;
   border-radius: var(--radius-sm);
   flex: 1;
+  border: 1px solid rgba(255,255,255,0.05);
 }
 
 .btn-toggle.active {
   background: var(--accent);
   color: #fff;
+  box-shadow: 0 2px 10px var(--accent-glow);
 }
 
+/* === Layout Helpers === */
 .btn-row {
   display: flex;
   gap: 12px;
@@ -323,17 +416,18 @@ input[type="text"] {
   font-size: 1rem;
   background: var(--bg-input);
   color: var(--text);
-  border: 2px solid transparent;
+  border: 1.5px solid rgba(255,255,255,0.06);
   border-radius: var(--radius);
   padding: 12px 16px;
   flex: 1;
-  min-height: 48px;
+  min-height: 50px;
   outline: none;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 input[type="text"]:focus {
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
 }
 
 input[type="text"]::placeholder {
@@ -344,33 +438,43 @@ input[type="text"]::placeholder {
 .stepper {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 28px;
   justify-content: center;
+  padding: 8px 0;
 }
 
 .btn-stepper {
-  width: 52px;
-  height: 52px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  background: var(--bg-input);
+  background: var(--bg-card);
   color: var(--text);
   font-size: 1.5rem;
   padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 1.5px solid rgba(255,255,255,0.08);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.btn-stepper:active:not(:disabled) {
+  background: var(--bg-input);
 }
 
 .btn-stepper:disabled {
-  opacity: 0.25;
+  opacity: 0.2;
 }
 
 .stepper-count {
-  font-size: 3rem;
-  font-weight: 700;
-  min-width: 72px;
+  font-family: var(--font-display);
+  font-size: 3.5rem;
+  font-weight: 400;
+  min-width: 80px;
   text-align: center;
   font-variant-numeric: tabular-nums;
+  color: var(--accent);
+  text-shadow: 0 0 20px var(--accent-glow);
 }
 
 /* === Player List === */
@@ -389,9 +493,11 @@ input[type="text"]::placeholder {
   align-items: center;
   justify-content: space-between;
   background: var(--bg-card);
-  padding: 12px 16px;
+  padding: 13px 16px;
   border-radius: var(--radius-sm);
   font-size: 1rem;
+  border: 1px solid rgba(255,255,255,0.04);
+  transition: background 0.15s ease;
 }
 
 .player-item .player-name {
@@ -413,6 +519,7 @@ input[type="text"]::placeholder {
   align-items: center;
   justify-content: center;
   -webkit-tap-highlight-color: transparent;
+  transition: color 0.15s ease;
 }
 
 .player-remove:hover {
@@ -422,7 +529,6 @@ input[type="text"]::placeholder {
 /* Tappable name rows in setup */
 #player-list .player-item {
   cursor: pointer;
-  transition: background 0.15s ease;
 }
 
 #player-list .player-item:active {
@@ -501,13 +607,13 @@ input[type="text"]::placeholder {
   font-size: 0.85rem;
   font-weight: 600;
   padding: 12px 8px;
-  border: 2px solid var(--bg-input);
+  border: 1.5px solid rgba(255,255,255,0.06);
   border-radius: var(--radius-sm);
   background: var(--bg-card);
   color: var(--text-dim);
   cursor: pointer;
-  min-height: 48px;
-  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+  min-height: 50px;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   -webkit-user-select: none;
@@ -516,7 +622,8 @@ input[type="text"]::placeholder {
 .category-btn.selected {
   border-color: var(--accent);
   color: var(--text);
-  background: rgba(233, 69, 96, 0.1);
+  background: var(--accent-dim);
+  box-shadow: 0 0 12px rgba(232, 133, 74, 0.1);
 }
 
 /* === Toggle Switch === */
@@ -547,26 +654,29 @@ input[type="text"]::placeholder {
   border-radius: 15px;
   cursor: pointer;
   transition: background 0.2s ease;
+  border: 1px solid rgba(255,255,255,0.06);
 }
 
 .slider::before {
   content: '';
   position: absolute;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   left: 3px;
   bottom: 3px;
-  background: var(--text);
+  background: var(--text-dim);
   border-radius: 50%;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, background 0.2s ease;
 }
 
 .switch input:checked + .slider {
   background: var(--accent);
+  border-color: transparent;
 }
 
 .switch input:checked + .slider::before {
   transform: translateX(22px);
+  background: #fff;
 }
 
 /* === Timer Select === */
@@ -576,7 +686,7 @@ input[type="text"]::placeholder {
   font-weight: 600;
   background: var(--bg-input);
   color: var(--text);
-  border: 2px solid transparent;
+  border: 1.5px solid rgba(255,255,255,0.06);
   border-radius: var(--radius-sm);
   padding: 8px 12px;
   min-height: 40px;
@@ -584,14 +694,15 @@ input[type="text"]::placeholder {
   cursor: pointer;
   -webkit-appearance: none;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238a8a9a' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%239E8E7E' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
   padding-right: 30px;
+  transition: border-color 0.15s ease;
 }
 
 .timer-select:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: default;
 }
 
@@ -617,10 +728,24 @@ input[type="text"]::placeholder {
 }
 
 .setting-group-compact {
-  gap: 8px;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 4px 16px;
+  border: 1px solid rgba(255,255,255,0.04);
+  gap: 0;
 }
 
-/* Subtle text link (used for "Add custom pack") */
+/* Each labeled row within the compact group */
+.setting-group-compact .setting-labeled-row {
+  padding: 13px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.setting-group-compact .setting-labeled-row:last-child {
+  border-bottom: none;
+}
+
+/* Subtle text link */
 .link-subtle {
   color: var(--text-dim);
   font-size: 0.85rem;
@@ -629,6 +754,11 @@ input[type="text"]::placeholder {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   align-self: center;
+  transition: color 0.15s ease;
+}
+
+.link-subtle:hover {
+  color: var(--accent);
 }
 
 .setting-labeled-row {
@@ -642,6 +772,7 @@ input[type="text"]::placeholder {
 .setting-labeled-row h3 {
   margin: 0;
   flex-shrink: 0;
+  letter-spacing: 0.05em;
 }
 
 .toggle-row-fit {
@@ -663,26 +794,18 @@ input[type="text"]::placeholder {
 }
 
 .pass-label {
-  font-size: 1.125rem;
+  font-size: 1.05rem;
   color: var(--text-dim);
+  letter-spacing: 0.01em;
 }
 
 .player-name-large {
-  font-size: 2rem;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 2.4rem;
+  font-weight: 400;
   text-align: center;
-}
-
-.reveal-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  text-align: center;
-}
-
-.reveal-content.hidden {
-  display: none;
+  color: var(--text);
+  letter-spacing: 0.02em;
 }
 
 /* Hold screen layout */
@@ -734,30 +857,39 @@ input[type="text"]::placeholder {
   pointer-events: none;
 }
 
+/* Role text */
 .role-text {
-  font-size: 1rem;
+  font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.14em;
+  color: var(--text-dim);
 }
 
 .role-text.impostor {
   color: var(--danger);
-  font-size: 1.5rem;
+  font-size: 1rem;
+  letter-spacing: 0.16em;
+  text-shadow: 0 0 16px var(--danger-glow);
 }
 
 .role-text.civilian {
   color: var(--success);
+  text-shadow: 0 0 12px var(--success-glow);
 }
 
+/* Word reveal */
 .word-text {
-  font-size: 2.5rem;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 2.8rem;
+  font-weight: 400;
+  color: var(--text);
+  letter-spacing: 0.02em;
 }
 
 .hint-text {
   color: var(--text-dim);
-  font-size: 1rem;
+  font-size: 0.95rem;
   text-align: center;
   line-height: 1.6;
 }
@@ -767,7 +899,7 @@ input[type="text"]::placeholder {
 }
 
 .btn-got-it {
-  margin-top: 24px;
+  margin-top: 20px;
 }
 
 /* === Timer Display === */
@@ -783,11 +915,11 @@ input[type="text"]::placeholder {
 
 .timer-bar {
   width: 100%;
-  height: 6px;
-  background: var(--bg-input);
+  height: 5px;
+  background: var(--bg-card);
   border-radius: 3px;
   overflow: hidden;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .timer-bar::after {
@@ -809,9 +941,12 @@ input[type="text"]::placeholder {
 }
 
 .timer-text {
-  font-size: 2rem;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 400;
   font-variant-numeric: tabular-nums;
+  color: var(--text);
+  letter-spacing: 0.04em;
 }
 
 @keyframes timerFlash {
@@ -826,23 +961,26 @@ input[type="text"]::placeholder {
 
 /* === First Player Callout === */
 .first-player {
-  font-size: 1.1rem;
+  font-size: 1rem;
   text-align: center;
   color: var(--text);
   background: var(--bg-card);
-  padding: 12px 20px;
+  padding: 14px 20px;
   border-radius: var(--radius);
-  border-left: 4px solid var(--accent);
+  border-left: 3px solid var(--accent);
   width: 100%;
+  border: 1px solid rgba(255,255,255,0.05);
+  border-left: 3px solid var(--accent);
+  line-height: 1.4;
 }
 
 .first-player strong {
   color: var(--accent);
 }
 
+/* Check word list items */
 .check-list .player-item {
   cursor: pointer;
-  transition: background 0.15s ease;
 }
 
 .check-list .player-item:active {
@@ -853,12 +991,14 @@ input[type="text"]::placeholder {
 .overlay {
   position: fixed;
   inset: 0;
-  background: var(--bg);
+  background: var(--bg-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100;
   padding: var(--spacing);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
 }
 
 .overlay.hidden {
@@ -874,25 +1014,35 @@ input[type="text"]::placeholder {
   gap: var(--spacing);
 }
 
-/* === Results === */
+/* === Results Screen === */
+#screen-results .screen-content {
+  gap: 12px;
+}
+
 .result-name {
-  font-size: 2rem;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 2.4rem;
+  font-weight: 400;
   color: var(--danger);
   text-align: center;
+  text-shadow: 0 0 30px var(--danger-glow);
 }
 
 .result-label {
   color: var(--text-dim);
-  font-size: 1rem;
-  margin-top: var(--spacing);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 8px;
 }
 
 .result-word {
-  font-size: 2.5rem;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 2.8rem;
+  font-weight: 400;
   color: var(--success);
   text-align: center;
+  text-shadow: 0 0 24px var(--success-glow);
 }
 
 /* === No-select during gameplay === */
@@ -902,61 +1052,71 @@ input[type="text"]::placeholder {
 }
 
 /* === Animations === */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .screen:not(.hidden) {
-  animation: fadeIn 0.25s ease;
+  animation: fadeSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes pulse {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+  50% { transform: scale(1.04); }
 }
 
 .btn-hold.holding {
-  animation: pulse 0.6s ease infinite;
+  animation: pulse 0.65s ease infinite;
 }
 
 /* === Result Reveal Animation === */
 @keyframes revealPop {
-  0% { opacity: 0; transform: scale(0.5); }
-  70% { transform: scale(1.05); }
-  100% { opacity: 1; transform: scale(1); }
+  0% { opacity: 0; transform: scale(0.4) translateY(10px); }
+  65% { transform: scale(1.06) translateY(-2px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 #screen-results .result-name,
 #screen-results .result-word {
-  animation: revealPop 0.4s ease both;
+  animation: revealPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 #screen-results .result-word {
-  animation-delay: 0.2s;
+  animation-delay: 0.25s;
 }
 
 .results-actions {
-  margin-top: 32px;
+  margin-top: 24px;
+  width: 100%;
 }
 
-/* === Landscape hint === */
+/* === Landscape compact mode === */
 @media (orientation: landscape) and (max-height: 500px) {
   .screen-content {
     gap: 8px;
   }
   .title {
-    font-size: 2rem;
+    font-size: 2.5rem;
   }
   .btn-hold {
-    width: 100px;
-    height: 100px;
+    width: 104px;
+    height: 104px;
   }
   .word-text {
     font-size: 1.8rem;
   }
   .player-list {
     max-height: 180px;
+  }
+  .stepper-count {
+    font-size: 2.5rem;
   }
 }
 
@@ -966,10 +1126,15 @@ input[type="text"]::placeholder {
   font-size: 0.875rem;
 }
 
-/* === Custom Editor === */
+/* === Custom Pack Editor === */
 .custom-editor {
   max-height: 80dvh;
   overflow-y: auto;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5);
 }
 
 .custom-editor .input-row {
