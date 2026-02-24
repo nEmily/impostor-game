@@ -1,3 +1,7 @@
+/* === Google Font Import === */
+/* Must be first rule (before :root) per CSS spec */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap');
+
 /* === Custom Properties === */
 :root {
   /* Warm dark palette */
@@ -43,9 +47,6 @@
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
 }
-
-/* === Google Font Import === */
-@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap');
 
 /* === Reset === */
 *, *::before, *::after {
@@ -967,10 +968,10 @@ input[type="text"]::placeholder {
   background: var(--bg-card);
   padding: 14px 20px;
   border-radius: var(--radius);
-  border-left: 3px solid var(--accent);
-  width: 100%;
+  /* border shorthand first, then border-left override */
   border: 1px solid rgba(255,255,255,0.05);
   border-left: 3px solid var(--accent);
+  width: 100%;
   line-height: 1.4;
 }
 
