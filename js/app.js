@@ -212,11 +212,15 @@
         li.appendChild(span);
         list.appendChild(li);
       }
-      // Scroll fade indicator
+      // Scroll fade indicator — remove any previous listener before adding
       function checkSetupScroll() {
         var atBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 8;
         wrapper.classList.toggle('scrolled-bottom', atBottom);
       }
+      if (list._scrollHandler) {
+        list.removeEventListener('scroll', list._scrollHandler);
+      }
+      list._scrollHandler = checkSetupScroll;
       list.addEventListener('scroll', checkSetupScroll);
       checkSetupScroll();
     } else {
@@ -306,12 +310,16 @@
       grid.appendChild(btn);
     });
 
-    // Scroll fade indicator
+    // Scroll fade indicator — remove any previous listener before adding
     var wrapper = grid.parentElement;
     function checkScroll() {
       var atBottom = grid.scrollHeight - grid.scrollTop - grid.clientHeight < 8;
       wrapper.classList.toggle('scrolled-bottom', atBottom);
     }
+    if (grid._scrollHandler) {
+      grid.removeEventListener('scroll', grid._scrollHandler);
+    }
+    grid._scrollHandler = checkScroll;
     grid.addEventListener('scroll', checkScroll);
     checkScroll();
   }
@@ -644,11 +652,15 @@
       });
       list.appendChild(li);
     });
-    // Scroll fade indicator
+    // Scroll fade indicator — remove any previous listener before adding
     function checkScroll() {
       var atBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 8;
       wrapper.classList.toggle('scrolled-bottom', atBottom);
     }
+    if (list._scrollHandler) {
+      list.removeEventListener('scroll', list._scrollHandler);
+    }
+    list._scrollHandler = checkScroll;
     list.addEventListener('scroll', checkScroll);
     checkScroll();
   }

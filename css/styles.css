@@ -1,7 +1,3 @@
-/* === Google Font Import === */
-/* Must be first rule (before :root) per CSS spec */
-@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap');
-
 /* === Custom Properties === */
 :root {
   /* Warm dark palette */
@@ -39,7 +35,7 @@
 
   /* Typography */
   --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-display: 'Fredoka One', 'Nunito', var(--font);
+  --font-display: 'Fredoka One', var(--font);
 
   /* Safe areas */
   --safe-top: env(safe-area-inset-top, 0px);
@@ -807,6 +803,9 @@ input[type="text"]::placeholder {
   text-align: center;
   color: var(--text);
   letter-spacing: 0.02em;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
 }
 
 /* Hold screen layout */
@@ -886,6 +885,9 @@ input[type="text"]::placeholder {
   font-weight: 400;
   color: var(--text);
   letter-spacing: 0.02em;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
 }
 
 .hint-text {
@@ -997,7 +999,7 @@ input[type="text"]::placeholder {
   align-items: center;
   justify-content: center;
   z-index: 100;
-  padding: var(--spacing);
+  padding: calc(var(--safe-top) + var(--spacing)) calc(var(--safe-right) + var(--spacing)) calc(var(--safe-bottom) + var(--spacing)) calc(var(--safe-left) + var(--spacing));
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
 }
@@ -1027,6 +1029,9 @@ input[type="text"]::placeholder {
   color: var(--danger);
   text-align: center;
   text-shadow: 0 0 30px var(--danger-glow);
+  overflow-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
 }
 
 .result-label {
@@ -1044,6 +1049,9 @@ input[type="text"]::placeholder {
   color: var(--success);
   text-align: center;
   text-shadow: 0 0 24px var(--success-glow);
+  overflow-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
 }
 
 /* === No-select during gameplay === */
