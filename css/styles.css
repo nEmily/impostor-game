@@ -5,7 +5,7 @@
   --bg-secondary: #231A12;
   --bg-card: #2D2018;
   --bg-input: #3A2A1A;
-  --bg-overlay: rgba(16, 10, 6, 0.97);
+  --bg-overlay: rgba(16, 10, 6, 1);
 
   /* Accent — warm amber/terracotta */
   --accent: #E8854A;
@@ -891,12 +891,11 @@ input[type="text"]::placeholder {
 /* Word reveal */
 .word-text {
   font-family: var(--font-display);
-  font-size: 2.8rem;
+  font-size: clamp(1.8rem, 10vw, 2.8rem);
   font-weight: 400;
   color: var(--text);
   letter-spacing: 0.02em;
   overflow-wrap: break-word;
-  word-break: break-word;
   max-width: 100%;
 }
 
